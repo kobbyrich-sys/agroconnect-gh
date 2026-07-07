@@ -23,7 +23,7 @@ export function CTA() {
               Request a Quote
             </Link>
             <a
-              href="https://wa.me/233000000000"
+              href="https://wa.me/233557410369"
               target="_blank"
               rel="noopener noreferrer"
               className={buttonVariants({ size: "lg", variant: "outline" })}

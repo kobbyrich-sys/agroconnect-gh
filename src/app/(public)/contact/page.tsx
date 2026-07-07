@@ -29,25 +29,30 @@ function ContactContent() {
           <div className="grid gap-12 lg:grid-cols-5">
             <FadeIn direction="left" className="space-y-8 lg:col-span-2">
               {[
-                {
-                  label: "Email",
-                  value: "info@transdel.com",
-                  href: "mailto:info@transdel.com",
-                },
-                {
-                  label: "Phone",
-                  value: "+233 000 000 000",
-                  href: "tel:+233000000000",
-                },
-                {
-                  label: "WhatsApp",
-                  value: "Chat with us",
-                  href: "https://wa.me/233000000000",
-                },
-                {
-                  label: "Location",
-                  value: "Accra, Ghana",
-                },
+                  {
+                    label: "Email",
+                    value: "transdelsetups@gmail.com",
+                    href: "mailto:transdelsetups@gmail.com",
+                  },
+                  {
+                    label: "Phone",
+                    value: "+233 557 410 369",
+                    href: "tel:+233557410369",
+                  },
+                  {
+                    label: "Phone",
+                    value: "+233 538 134 778",
+                    href: "tel:+233538134778",
+                  },
+                  {
+                    label: "WhatsApp",
+                    value: "Chat with us",
+                    href: "https://wa.me/233557410369",
+                  },
+                  {
+                    label: "Location",
+                    value: "Tema, Ghana",
+                  },
               ].map((c) => (
                 <div key={c.label}>
                   <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">

@@ -67,21 +67,29 @@ export function Footer() {
               Contact
             </h4>
             <ul className="space-y-3 text-sm">
-              <li>Accra, Ghana</li>
+              <li>Tema, Ghana</li>
               <li>
                 <a
-                  href="tel:+233000000000"
+                  href="tel:+233557410369"
                   className="transition-colors hover:text-white"
                 >
-                  +233 000 000 000
+                  +233 557 410 369
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:info@transdel.com"
+                  href="tel:+233538134778"
                   className="transition-colors hover:text-white"
                 >
-                  info@transdel.com
+                  +233 538 134 778
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:transdelsetups@gmail.com"
+                  className="transition-colors hover:text-white"
+                >
+                  transdelsetups@gmail.com
                 </a>
               </li>
             </ul>
