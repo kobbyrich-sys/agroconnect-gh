@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -26,12 +26,12 @@ export default function NewInvoicePage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useState(() => {
+  useEffect(() => {
     const supabase = createClient();
     supabase.from("profiles").select("*").eq("role", "customer").then(({ data }) => {
       if (data) setCustomers(data);
     });
-  });
+  }, []);
 
   function updateItem(index: number, field: keyof LineItem, value: string) {
     const updated = [...items];

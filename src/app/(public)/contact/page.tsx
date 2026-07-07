@@ -5,16 +5,20 @@ import { Suspense } from "react";
 import { Section, SectionHeader, FadeIn } from "@/components/ui";
 import { ContactForm, QuotationForm } from "@/components/forms";
 
+const serviceNames: Record<string, string> = {
+  "cctv-installation": "CCTV Installation",
+  "access-control": "Access Control Systems",
+  "network-infrastructure": "Network Infrastructure",
+  "workstation-setup": "Workstation Setup",
+  "it-support": "IT Support",
+  "preventive-maintenance": "Preventive Maintenance",
+};
+
 function ContactContent() {
   const searchParams = useSearchParams();
   const serviceParam = searchParams.get("service");
 
-  const defaultService = serviceParam
-    ? serviceParam
-        .split("-")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ")
-    : undefined;
+  const defaultService = serviceParam ? serviceNames[serviceParam] : undefined;
 
   return (
     <>
