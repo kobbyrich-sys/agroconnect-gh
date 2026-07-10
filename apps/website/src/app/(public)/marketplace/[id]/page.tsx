@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { WishlistButton } from '@/components/product/wishlist-button';
 import { ReviewForm } from '@/components/product/review-form';
+import { getBaseUrl } from '@/lib/utils';
 
 async function getProduct(id: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/products/${id}`,
+    `${getBaseUrl()}/api/products/${id}`,
     { cache: 'no-store' },
   );
   return res.json();

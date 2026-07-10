@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import { getBaseUrl } from '@/lib/utils';
 
 async function getCategories() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, {
+  const res = await fetch(`${getBaseUrl()}/api/categories`, {
     cache: 'force-cache',
     next: { revalidate: 3600 },
   });

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getBaseUrl } from '@/lib/utils';
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -11,7 +12,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 async function getOrder(id: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/orders/${id}`,
+    `${getBaseUrl()}/api/orders/${id}`,
     { cache: 'no-store' },
   );
   return res.json();

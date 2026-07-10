@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import { getBaseUrl } from '@/lib/utils';
 
 async function getCategory(slug: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${slug}`,
+    `${getBaseUrl()}/api/categories/${slug}`,
     { cache: 'no-store' },
   );
   return res.json();
@@ -10,7 +11,7 @@ async function getCategory(slug: string) {
 
 async function getProducts(categorySlug: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/products?category=${categorySlug}&limit=50`,
+    `${getBaseUrl()}/api/products?category=${categorySlug}&limit=50`,
     { cache: 'no-store' },
   );
   return res.json();

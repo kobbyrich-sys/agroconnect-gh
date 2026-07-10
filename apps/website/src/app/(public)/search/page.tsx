@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getBaseUrl } from '@/lib/utils';
 
 interface SearchParams {
   q?: string;
@@ -20,7 +21,7 @@ async function searchProducts(params: SearchParams) {
   qs.set('limit', '24');
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/search?${qs.toString()}`,
+    `${getBaseUrl()}/api/search?${qs.toString()}`,
     { cache: 'no-store' },
   );
   return res.json();
@@ -28,7 +29,7 @@ async function searchProducts(params: SearchParams) {
 
 async function getCategories() {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/categories`,
+    `${getBaseUrl()}/api/categories`,
     { cache: 'force-cache', next: { revalidate: 3600 } },
   );
   return res.json();
