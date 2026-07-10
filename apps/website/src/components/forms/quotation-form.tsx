@@ -159,7 +159,7 @@ export function QuotationForm({ defaultService }: { defaultService?: string }) {
           required
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
         >
-          <option value="" disabled selected>Select a region...</option>
+          <option value="" disabled>Select a region...</option>
           <option>Greater Accra</option>
           <option>Ashanti</option>
           <option>Eastern</option>
@@ -177,8 +177,6 @@ export function QuotationForm({ defaultService }: { defaultService?: string }) {
           <option>North East</option>
           <option>Savannah</option>
         </select>
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
-        />
       </div>
 
       {error && (
