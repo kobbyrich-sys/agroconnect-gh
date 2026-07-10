@@ -1,29 +1,31 @@
 {
-  "name": "transdel-website",
-  "version": "0.1.0",
+  "name": "agroconnect-gh",
+  "version": "1.0.0",
   "private": true,
+  "description": "AgroConnect GH - Ghana's digital agricultural and manufacturing marketplace",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo clean && rm -rf node_modules"
   },
-  "dependencies": {
-    "@supabase/ssr": "^0.12.0",
-    "@supabase/supabase-js": "^2.49.0",
-    "framer-motion": "^12.42.2",
-    "next": "^15.2.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.0",
-    "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "^15.2.0",
-    "tailwindcss": "^4.1.0",
+    "prettier": "^3.5.0",
+    "turbo": "^2.10.0",
     "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@11.13.0",
+  "dependencies": {
+    "@next/swc-win32-x64-msvc": "^16.2.10",
+    "pg": "^8.22.0"
   }
 }
