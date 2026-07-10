@@ -87,9 +87,10 @@ export async function POST(request: Request) {
   }
 
   for (const item of cartItems) {
-    if (item.quantity > item.product.stock_quantity) {
+    const p = item.product as any;
+    if (item.quantity > p.stock_quantity) {
       return NextResponse.json(
-        { success: false, error: `Insufficient stock for ${item.product.name}` },
+        { success: false, error: `Insufficient stock for ${p.name}` },
         { status: 400 },
       );
     }
@@ -107,11 +108,12 @@ export async function POST(request: Request) {
   }
 
   const sellerGroups = cartItems.reduce((groups: any, item: any) => {
-    const key = item.product.business_id;
+    const p = item.product as any;
+    const key = p.business_id;
     if (!groups[key]) {
       groups[key] = {
-        seller_id: item.product.seller_id,
-        business_id: item.product.business_id,
+        seller_id: p.seller_id,
+        business_id: p.business_id,
         items: [],
       };
     }
@@ -126,9 +128,10 @@ export async function POST(request: Request) {
   for (const [businessId, group] of Object.entries(sellerGroups)) {
     const groupData = group as any;
     const subtotal = groupData.items.reduce((sum: number, item: any) => {
-      const price = item.wholesale && item.product.wholesale_price
-        ? parseFloat(item.product.wholesale_price)
-        : parseFloat(item.product.retail_price);
+      const p = item.product as any;
+      const price = item.wholesale && p.wholesale_price
+        ? parseFloat(p.wholesale_price)
+        : parseFloat(p.retail_price);
       return sum + price * item.quantity;
     }, 0);
 
@@ -159,13 +162,14 @@ export async function POST(request: Request) {
     }
 
     const orderItems = groupData.items.map((item: any) => {
-      const price = item.wholesale && item.product.wholesale_price
-        ? parseFloat(item.product.wholesale_price)
-        : parseFloat(item.product.retail_price);
+      const p = item.product as any;
+      const price = item.wholesale && p.wholesale_price
+        ? parseFloat(p.wholesale_price)
+        : parseFloat(p.retail_price);
       return {
         order_id: order.id,
-        product_id: item.product.id,
-        product_name: item.product.name,
+        product_id: p.id,
+        product_name: p.name,
         unit_price: price,
         quantity: item.quantity,
         wholesale: item.wholesale || false,
@@ -181,10 +185,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: itemsInsertError.message }, { status: 400 });
     }
 
-    const productIds = groupData.items.map((item: any) => item.product.id);
+    const productIds = groupData.items.map((item: any) => (item.product as any).id);
     for (const item of groupData.items) {
+      const p = item.product as any;
       await supabase.rpc('decrement_stock', {
-        p_product_id: item.product.id,
+        p_product_id: p.id,
         p_quantity: item.quantity,
       });
     }
