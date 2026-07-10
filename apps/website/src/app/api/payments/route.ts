@@ -41,19 +41,21 @@ export async function POST(request: Request) {
   }
 
   const reference = `AGC-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const orderId = order.id;
+  const orderTotal = order.total;
 
   async function processPayment(status: string): Promise<boolean> {
     const { error: payErr } = await supabase.from('payments').insert({
-      order_id: order.id, buyer_id: user.id, amount: order.total,
+      order_id: orderId, buyer_id: user.id, amount: orderTotal,
       method, provider: provider || method, reference, status,
     });
     if (payErr) throw new Error(payErr.message);
 
     if (status === 'completed') {
-      await holdInEscrow(supabase, order.id, parseFloat(order.total), user.id);
+      await holdInEscrow(supabase, orderId, parseFloat(orderTotal), user.id);
       await supabase.from('orders').update({
         status: 'confirmed', payment_status: 'paid', paid_at: new Date().toISOString(),
-      }).eq('id', order.id);
+      }).eq('id', orderId);
     }
     return true;
   }
