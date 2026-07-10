@@ -15,7 +15,7 @@ export async function GET() {
       p2:profiles!participant_2_id(full_name, avatar_url, role)
     `)
     .or(`participant_1_id.eq.${user.id},participant_2_id.eq.${user.id}`)
-    .order('last_message_at', { ascending: false, nullsLast: true });
+    .order('last_message_at', { ascending: false });
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 400 });
 

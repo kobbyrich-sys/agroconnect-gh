@@ -16,7 +16,7 @@ export default async function MessagesPage() {
       p2:profiles!participant_2_id(full_name, avatar_url)
     `)
     .or(`participant_1_id.eq.${user.id},participant_2_id.eq.${user.id}`)
-    .order('last_message_at', { ascending: false, nullsLast: true });
+    .order('last_message_at', { ascending: false });
 
   const mapped = chats?.map((chat: any) => {
     const other = chat.participant_1_id === user.id ? chat.p2 : chat.p1;
