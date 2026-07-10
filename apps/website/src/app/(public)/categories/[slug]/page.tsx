@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getBaseUrl } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 async function getCategory(slug: string) {
   const res = await fetch(
     `${getBaseUrl()}/api/categories/${slug}`,

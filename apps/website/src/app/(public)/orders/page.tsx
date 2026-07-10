@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getBaseUrl } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
   confirmed: 'bg-blue-50 text-blue-700 border-blue-200',

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getBaseUrl } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 interface SearchParams {
   q?: string;
   category?: string;
