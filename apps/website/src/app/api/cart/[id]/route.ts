@@ -38,9 +38,9 @@ export async function PATCH(
     .eq('id', item.product_id)
     .single();
 
-  if (quantity > product.stock_quantity) {
+  if (!product || quantity > product.stock_quantity) {
     return NextResponse.json(
-      { success: false, error: `Only ${product.stock_quantity} in stock` },
+      { success: false, error: !product ? 'Product not found' : `Only ${product.stock_quantity} in stock` },
       { status: 400 },
     );
   }
