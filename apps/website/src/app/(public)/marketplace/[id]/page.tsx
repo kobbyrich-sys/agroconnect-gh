@@ -143,28 +143,27 @@ export default async function ProductDetailPage({
         <div className="mt-16">
           <h2 className="text-xl font-bold text-gray-900">Customer Reviews</h2>
           <ReviewForm productId={product.id} />
-            <div className="mt-6 space-y-6">
-              {product.reviews.slice(0, 5).map((review: any) => (
-                <div key={review.id} className="border-b border-gray-100 pb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-600">
-                      {review.profiles?.full_name?.charAt(0) || 'U'}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{review.profiles?.full_name || 'Anonymous'}</p>
-                      <div className="flex items-center gap-1">
-                        <span className="text-amber-500">{'⭐'.repeat(review.rating)}</span>
-                        <span className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString()}</span>
-                      </div>
+          <div className="mt-6 space-y-6">
+            {product.reviews.slice(0, 5).map((review: any) => (
+              <div key={review.id} className="border-b border-gray-100 pb-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-600">
+                    {review.profiles?.full_name?.charAt(0) || 'U'}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{review.profiles?.full_name || 'Anonymous'}</p>
+                    <div className="flex items-center gap-1">
+                      <span className="text-amber-500">{'⭐'.repeat(review.rating)}</span>
+                      <span className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
-                  {review.title && <p className="mt-2 font-medium text-gray-900">{review.title}</p>}
-                  <p className="mt-1 text-sm text-gray-600">{review.comment}</p>
                 </div>
-              ))}
-            </div>
+                {review.title && <p className="mt-2 font-medium text-gray-900">{review.title}</p>}
+                <p className="mt-1 text-sm text-gray-600">{review.comment}</p>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
 
         {product.related_products?.length > 0 && (
           <div className="mt-16">
