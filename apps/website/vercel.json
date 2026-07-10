@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd ../.. && npx turbo build --filter=@agroconnect/website",
+  "outputDirectory": ".next",
+  "installCommand": "cd ../.. && npm install"
+}
