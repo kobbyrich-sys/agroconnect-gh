@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Learn about Transdel Set-Up Services — your trusted partner for security systems and IT infrastructure in Ghana since our founding.",
+    "Learn about AgroConnect GH — Ghana's digital agricultural marketplace connecting farmers, manufacturers, and buyers directly.",
   openGraph: {
-    title: "About Transdel Set-Up Services",
+    title: "About AgroConnect GH",
     description:
-      "Learn about Transdel Set-Up Services — your trusted partner for security systems and IT infrastructure in Ghana.",
+      "Learn about AgroConnect GH — Ghana's digital agricultural marketplace connecting farmers, manufacturers, and buyers directly.",
   },
 };
 

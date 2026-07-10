@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with Transdel Set-Up Services. Request a quotation, ask about our services, or start your project today.",
+    "Get in touch with AgroConnect GH. Reach our team for support, partnership inquiries, or questions about buying and selling on our marketplace.",
   openGraph: {
-    title: "Contact Transdel Set-Up Services",
+    title: "Contact AgroConnect GH",
     description:
-      "Get in touch with Transdel Set-Up Services. Request a quotation, ask about our services, or start your project today.",
+      "Get in touch with AgroConnect GH. Reach our team for support, partnership inquiries, or questions about buying and selling on our marketplace.",
   },
 };
 

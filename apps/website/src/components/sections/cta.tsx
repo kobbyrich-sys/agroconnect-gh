@@ -9,27 +9,24 @@ export function CTA() {
       <FadeIn>
         <div className="mx-auto max-w-2xl">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Ready to Get Started?
+            Ready to Start Trading?
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Tell us about your project and we&apos;ll provide a free,
-            no-obligation quote within 24 hours.
+            Join thousands of farmers and buyers on Ghana&apos;s fastest-growing agricultural marketplace.
           </p>
           <div className="mt-8 flex items-center justify-center gap-4">
             <Link
-              href="/contact"
+              href="/sell"
               className={buttonVariants({ size: "lg" })}
             >
-              Request a Quote
+              Start Selling
             </Link>
-            <a
-              href="https://wa.me/233557410369"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/marketplace"
               className={buttonVariants({ size: "lg", variant: "outline" })}
             >
-              Chat on WhatsApp
-            </a>
+              Browse Products
+            </Link>
           </div>
         </div>
       </FadeIn>

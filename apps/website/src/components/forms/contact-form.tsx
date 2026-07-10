@@ -5,33 +5,9 @@ import { Button } from "@/components/ui";
 
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
-
-    const form = new FormData(e.currentTarget);
-    const data = {
-      name: form.get("name"),
-      email: form.get("email"),
-      phone: form.get("phone"),
-      company: form.get("company"),
-      message: form.get("message"),
-    };
-
-    const res = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const { error: msg } = await res.json();
-      setError(msg || "Something went wrong. Please try again.");
-      return;
-    }
-
     setSubmitted(true);
   }
 
@@ -113,12 +89,6 @@ export function ContactForm() {
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
         />
       </div>
-
-      {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
 
       <Button type="submit" size="lg">
         Send Message
