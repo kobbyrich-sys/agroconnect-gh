@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { WishlistButton } from '@/components/product/wishlist-button';
 import { ReviewForm } from '@/components/product/review-form';
+import { getBaseUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
