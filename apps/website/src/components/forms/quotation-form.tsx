@@ -4,12 +4,12 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui";
 
 const services = [
-  "CCTV Installation",
-  "Access Control Systems",
-  "Network Infrastructure",
-  "Workstation Setup",
-  "IT Support",
-  "Preventive Maintenance",
+  "Fresh Vegetables",
+  "Fresh Fruits",
+  "Grains & Cereals",
+  "Livestock & Poultry",
+  "Dairy Products",
+  "Farming Equipment",
 ];
 
 export function QuotationForm({ defaultService }: { defaultService?: string }) {
@@ -25,10 +25,10 @@ export function QuotationForm({ defaultService }: { defaultService?: string }) {
       name: form.get("name"),
       email: form.get("email"),
       phone: form.get("phone"),
-      company: form.get("company"),
-      service_interest: form.get("service_interest"),
-      project_details: form.get("project_details"),
-      preferred_date: form.get("preferred_date"),
+      company: form.get("farm_name"),
+      category_interest: form.get("category_interest"),
+      product_details: form.get("product_details"),
+      region: form.get("region"),
     };
 
     const res = await fetch("/api/quotations", {
@@ -54,7 +54,7 @@ export function QuotationForm({ defaultService }: { defaultService?: string }) {
           Quote Request Submitted!
         </h3>
         <p className="mt-2 text-green-600">
-          We&apos;ll review your request and get back to you within 24 hours.
+          We&apos;ll review your request and get in touch within 24 hours.
         </p>
       </div>
     );
@@ -102,30 +102,30 @@ export function QuotationForm({ defaultService }: { defaultService?: string }) {
           />
         </div>
         <div>
-          <label htmlFor="q-company" className="mb-1 block text-sm font-medium text-gray-700">
-            Company
+          <label htmlFor="q-farm" className="mb-1 block text-sm font-medium text-gray-700">
+            Farm / Business Name
           </label>
           <input
-            id="q-company"
-            name="company"
+            id="q-farm"
+            name="farm_name"
             className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="q-service" className="mb-1 block text-sm font-medium text-gray-700">
-          Service Interested In *
+        <label htmlFor="q-category" className="mb-1 block text-sm font-medium text-gray-700">
+              Product Category *
         </label>
         <select
-          id="q-service"
-          name="service_interest"
+          id="q-category"
+          name="category_interest"
           required
           defaultValue={defaultService || ""}
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
         >
           <option value="" disabled>
-            Select a service...
+            Select a category...
           </option>
           {services.map((s) => (
             <option key={s} value={s}>
@@ -137,26 +137,46 @@ export function QuotationForm({ defaultService }: { defaultService?: string }) {
 
       <div>
         <label htmlFor="q-details" className="mb-1 block text-sm font-medium text-gray-700">
-          Project Details *
+            Products & Pricing *
         </label>
         <textarea
           id="q-details"
-          name="project_details"
+          name="product_details"
           required
           rows={4}
-          placeholder="Describe your project, requirements, and any specific needs..."
+          placeholder="List the products, quantities, and pricing you offer..."
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
         />
       </div>
 
       <div>
-        <label htmlFor="q-date" className="mb-1 block text-sm font-medium text-gray-700">
-          Preferred Start Date
+        <label htmlFor="q-region" className="mb-1 block text-sm font-medium text-gray-700">
+            Region *
         </label>
-        <input
-          id="q-date"
-          name="preferred_date"
-          type="date"
+        <select
+          id="q-region"
+          name="region"
+          required
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
+        >
+          <option value="" disabled selected>Select a region...</option>
+          <option>Greater Accra</option>
+          <option>Ashanti</option>
+          <option>Eastern</option>
+          <option>Western</option>
+          <option>Central</option>
+          <option>Volta</option>
+          <option>Northern</option>
+          <option>Upper East</option>
+          <option>Upper West</option>
+          <option>Bono</option>
+          <option>Bono East</option>
+          <option>Ahafo</option>
+          <option>Western North</option>
+          <option>Oti</option>
+          <option>North East</option>
+          <option>Savannah</option>
+        </select>
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
         />
       </div>
@@ -168,7 +188,7 @@ export function QuotationForm({ defaultService }: { defaultService?: string }) {
       )}
 
       <Button type="submit" size="lg">
-        Submit Quote Request
+        Submit Partnership Request
       </Button>
     </form>
   );

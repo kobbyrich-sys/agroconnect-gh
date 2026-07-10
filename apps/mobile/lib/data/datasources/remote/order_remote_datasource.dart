@@ -28,7 +28,21 @@ class OrderRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> cancelOrder(String id) async {
-    final res = await _dio.patch('${ApiConstants.orders}/$id', data: {'status': 'cancelled'});
+    final res = await _dio.patch('${ApiConstants.orders}/$id/status', data: {'action': 'cancel'});
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateOrderStatus(String id, String action) async {
+    final res = await _dio.patch('${ApiConstants.orders}/$id/status', data: {'action': action});
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> raiseDispute(String orderId, String reason, String description) async {
+    final res = await _dio.post('/disputes', data: {
+      'order_id': orderId,
+      'reason': reason,
+      'description': description,
+    });
     return res.data as Map<String, dynamic>;
   }
 }

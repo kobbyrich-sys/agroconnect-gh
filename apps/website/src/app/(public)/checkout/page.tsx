@@ -1,63 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface Address {
-  id: string;
-  label: string;
-  street: string;
-  city: string;
-  region: string;
-  country: string;
-  gps_address: string | null;
-  landmark: string | null;
-  is_default: boolean;
-}
 
 const PAYMENT_METHODS = [
   { value: 'paystack', label: 'Paystack (Card, Mobile Money)', icon: '💳' },
-  { value: 'cash_on_delivery', label: 'Cash on Delivery', icon: '💵' },
   { value: 'mobile_money', label: 'Mobile Money', icon: '📱', providers: ['mtn', 'vodafone', 'airteltigo'] },
 ];
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('paystack');
   const [mobileProvider, setMobileProvider] = useState('mtn');
 
-  useEffect(() => {
-    fetchAddresses();
-  }, []);
-
-  async function fetchAddresses() {
-    try {
-      const res = await fetch('/api/users/addresses');
-      const data = await res.json();
-      if (data.success) {
-        setAddresses(data.addresses);
-        const defaultAddr = data.addresses.find((a: Address) => a.is_default);
-        if (defaultAddr) setSelectedAddress(defaultAddr.id);
-        else if (data.addresses.length > 0) setSelectedAddress(data.addresses[0].id);
-      }
-    } catch {
-      setError('Failed to load addresses');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedAddress) { setError('Please select a shipping address'); return; }
-
     setSubmitting(true);
     setError(null);
 
@@ -65,12 +26,15 @@ export default function CheckoutPage() {
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shipping_address_id: selectedAddress, notes: notes || undefined }),
+        body: JSON.stringify({ notes: notes || undefined }),
       });
       const orderData = await orderRes.json();
       if (!orderData.success) { setError(orderData.error); setSubmitting(false); return; }
 
-      const payData: any = { order_id: orderData.order.id, method: paymentMethod };
+      const orderId = orderData.orders?.[0]?.id;
+      if (!orderId) { setError('Failed to get order'); setSubmitting(false); return; }
+
+      const payData: any = { order_id: orderId, method: paymentMethod };
       if (paymentMethod === 'mobile_money') payData.provider = mobileProvider;
 
       const payRes = await fetch('/api/payments', {
@@ -93,10 +57,6 @@ export default function CheckoutPage() {
     }
   }
 
-  if (loading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" /></div>;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="mx-auto max-w-3xl px-4 md:px-6 lg:px-8">
@@ -105,35 +65,6 @@ export default function CheckoutPage() {
         {error && <div className="mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="text-lg font-semibold text-gray-900">Shipping Address</h2>
-            {addresses.length === 0 ? (
-              <div className="mt-4 rounded-lg bg-amber-50 p-4 text-sm text-amber-700">
-                No saved addresses. <Link href="/profile" className="font-medium underline">Add an address</Link>
-              </div>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {addresses.map((addr) => (
-                  <label key={addr.id} className={`flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors ${
-                    selectedAddress === addr.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                    <input type="radio" name="address" value={addr.id}
-                      checked={selectedAddress === addr.id}
-                      onChange={(e) => setSelectedAddress(e.target.value)} className="mt-1 accent-emerald-700" />
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {addr.label}
-                        {addr.is_default && <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-xs text-emerald-700">Default</span>}
-                      </p>
-                      <p className="mt-1 text-sm text-gray-500">{addr.street}, {addr.city}, {addr.region}</p>
-                      {addr.gps_address && <p className="text-xs text-gray-400">GPS: {addr.gps_address}</p>}
-                    </div>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
           <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6">
             <h2 className="text-lg font-semibold text-gray-900">Payment Method</h2>
             <div className="mt-4 space-y-3">
@@ -169,7 +100,7 @@ export default function CheckoutPage() {
 
           <div className="mt-8 flex items-center justify-between">
             <Link href="/cart" className="text-sm text-emerald-600 hover:underline">Back to Cart</Link>
-            <button type="submit" disabled={submitting || addresses.length === 0}
+            <button type="submit" disabled={submitting}
               className="rounded-lg bg-emerald-700 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-50">
               {submitting ? 'Processing...' : `Place Order`}
             </button>

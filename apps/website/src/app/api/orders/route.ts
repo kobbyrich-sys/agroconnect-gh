@@ -52,14 +52,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { shipping_address_id, notes } = body;
-
-  if (!shipping_address_id) {
-    return NextResponse.json(
-      { success: false, error: 'Shipping address is required' },
-      { status: 400 },
-    );
-  }
+  const { notes } = body;
 
   const { data: cart, error: cartError } = await supabase
     .from('carts')
@@ -96,17 +89,6 @@ export async function POST(request: Request) {
     }
   }
 
-  const { data: address } = await supabase
-    .from('addresses')
-    .select('*')
-    .eq('id', shipping_address_id)
-    .eq('user_id', user.id)
-    .single();
-
-  if (!address) {
-    return NextResponse.json({ success: false, error: 'Address not found' }, { status: 404 });
-  }
-
   const sellerGroups = cartItems.reduce((groups: any, item: any) => {
     const p = item.product as any;
     const key = p.business_id;
@@ -135,9 +117,9 @@ export async function POST(request: Request) {
       return sum + price * item.quantity;
     }, 0);
 
-    const deliveryFee = subtotal >= 100 ? 0 : 15;
     const commission = subtotal * 0.05;
-    const total = subtotal + deliveryFee - commission;
+    const total = subtotal;
+    const escrowExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -147,12 +129,12 @@ export async function POST(request: Request) {
         seller_id: groupData.seller_id,
         business_id: groupData.business_id,
         subtotal,
-        delivery_fee: deliveryFee,
         commission,
         total,
-        shipping_address_id,
-        shipping_address: address,
         buyer_notes: notes || null,
+        escrow_expires_at: escrowExpiresAt,
+        status: 'pending',
+        escrow_status: 'pending',
       })
       .select()
       .single();

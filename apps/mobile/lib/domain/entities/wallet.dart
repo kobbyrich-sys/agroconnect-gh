@@ -1,31 +1,25 @@
 class Wallet {
   final String id;
   final double balance;
+  final double pendingBalance;
   final double totalEarned;
   final double totalWithdrawn;
-  final String? accountName;
-  final String? accountNumber;
-  final String? bankName;
 
   Wallet({
     required this.id,
     this.balance = 0,
+    this.pendingBalance = 0,
     this.totalEarned = 0,
     this.totalWithdrawn = 0,
-    this.accountName,
-    this.accountNumber,
-    this.bankName,
   });
 
   factory Wallet.fromJson(Map<String, dynamic> json) {
     return Wallet(
       id: json['id'] as String,
       balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0,
+      pendingBalance: double.tryParse(json['pending_balance']?.toString() ?? '0') ?? 0,
       totalEarned: double.tryParse(json['total_earned']?.toString() ?? '0') ?? 0,
       totalWithdrawn: double.tryParse(json['total_withdrawn']?.toString() ?? '0') ?? 0,
-      accountName: json['account_name'] as String?,
-      accountNumber: json['account_number'] as String?,
-      bankName: json['bank_name'] as String?,
     );
   }
 }

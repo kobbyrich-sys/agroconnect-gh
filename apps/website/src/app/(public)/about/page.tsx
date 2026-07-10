@@ -5,24 +5,24 @@ import { Section, SectionHeader, FadeIn, Stagger, StaggerItem } from "@/componen
 
 const values = [
   {
-    title: "Reliability",
+    title: "Fresh From Farm",
     description:
-      "We show up on time, deliver on promises, and stand behind every installation. Our clients trust us because we earn it — every day.",
+      "We connect you directly with verified Ghanaian farmers — no middlemen, fair prices, and produce that was harvested days, not weeks ago.",
   },
   {
-    title: "Quality",
+    title: "Trust & Transparency",
     description:
-      "We use only proven equipment and follow industry best practices. No shortcuts, no compromises — just work that lasts.",
+      "Every seller is verified with Ghana Card and business registration. Clear pricing, honest product descriptions, and secure transactions you can rely on.",
   },
   {
-    title: "Transparency",
+    title: "Supporting Local Agriculture",
     description:
-      "Clear pricing, honest timelines, and open communication. You always know what to expect before we start.",
+      "We empower Ghanaian farmers, manufacturers, and wholesalers to reach more customers and grow their businesses across all 16 regions.",
   },
   {
-    title: "Support",
+    title: "Secure Escrow Payments",
     description:
-      "Our relationship doesn't end at installation. We provide ongoing maintenance, fast support, and genuine care for every client.",
+      "Funds are held securely in escrow until you confirm receipt. Your money is protected — released to the seller only when you're satisfied.",
   },
 ];
 
@@ -34,28 +34,20 @@ export default function AboutPage() {
           <FadeIn direction="left">
             <div>
               <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-                About Transdel Set-Up Services
+                About AgroConnect GH
               </h1>
               <p className="mt-4 text-lg leading-relaxed text-gray-600">
-                Your trusted partner for security systems and IT infrastructure
-                in Ghana.
+                Ghana&apos;s trusted agricultural marketplace — connecting farmers, buyers, and businesses.
               </p>
               <div className="mt-6 space-y-4 text-base leading-relaxed text-gray-600">
                 <p>
-                  Transdel Set-Up Services was founded to bridge the gap between
-                  growing demand for reliable technology infrastructure and the
-                  need for professional, accountable service delivery in Ghana.
+                  AgroConnect GH was built to solve a simple problem: Ghanaian farmers grow world-class produce, but too often struggle to find reliable buyers. Meanwhile, consumers and businesses want fresh, local food but don&apos;t know where to find it.
                 </p>
                 <p>
-                  Over the years, we have completed hundreds of projects across
-                  Accra and all regions of Ghana — from CCTV installations for
-                  small businesses to complete network infrastructure for large
-                  institutions.
+                  We bridge that gap with a digital marketplace that makes it easy to buy and sell agricultural products — from fresh vegetables and fruits to grains, livestock, and farming equipment.
                 </p>
                 <p>
-                  Whether you are securing your premises, setting up a new
-                  office, or upgrading your IT infrastructure, we deliver
-                  results that work.
+                  Our platform serves all 16 regions of Ghana, supporting the entire agricultural value chain from farm to table.
                 </p>
               </div>
             </div>
@@ -63,8 +55,8 @@ export default function AboutPage() {
           <FadeIn direction="right" delay={0.2}>
             <div className="overflow-hidden rounded-xl">
               <Image
-                src="https://images.pexels.com/photos/30688593/pexels-photo-30688593.jpeg"
-                alt="Transdel Set-Up Services team"
+                src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800"
+                alt="AgroConnect GH - Ghanaian farm marketplace"
                 width="800"
                 height="450"
                 className="h-auto w-full object-cover"
@@ -96,31 +88,31 @@ export default function AboutPage() {
 
       <Section>
         <FadeIn>
-          <SectionHeader title="Why Choose Us?" centered />
+          <SectionHeader title="Why Choose AgroConnect GH?" centered />
         </FadeIn>
         <div className="mx-auto max-w-3xl space-y-8">
           <Stagger>
             {[
               {
-                title: "Local Expertise",
-                desc: "Deep understanding of the Ghanaian market, infrastructure conditions, and regulatory requirements.",
+                title: "Verified Sellers",
+                desc: "Every farmer and business on our platform is verified with valid identification and business registration.",
               },
               {
-                title: "End-to-End Service",
-                desc: "From consultation and design to installation, training, and ongoing support — we handle it all.",
+                title: "Fresh Produce",
+                desc: "Buy directly from growers — shorter supply chains mean fresher food at better prices.",
               },
               {
-                title: "Proven Track Record",
-                desc: "Hundreds of successful projects across multiple sectors including education, healthcare, retail, and government.",
+                title: "Secure Payments",
+                desc: "Our escrow system protects both buyers and sellers. Pay with confidence using Mobile Money, card, or bank transfer.",
               },
               {
-                title: "Fast Response",
-                desc: "We respond to inquiries within 24 hours and prioritize urgent support requests from existing clients.",
+                title: "Nationwide Reach",
+                desc: "Connect with farmers and buyers across all 16 regions of Ghana. No location is too remote.",
               },
             ].map((item) => (
               <StaggerItem key={item.title}>
                 <div className="flex gap-4">
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-brand-700" />
+                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-700" />
                   <div>
                     <h3 className="font-semibold">{item.title}</h3>
                     <p className="mt-1 text-gray-600">{item.desc}</p>

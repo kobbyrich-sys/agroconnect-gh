@@ -34,12 +34,12 @@ class OrderDetailScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: order.status == 'delivered' ? Colors.green.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+                        color: order.status == 'completed' ? Colors.green.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(order.status.toUpperCase(), style: TextStyle(
                         fontSize: 11, fontWeight: FontWeight.w600,
-                        color: order.status == 'delivered' ? Colors.green : Colors.amber,
+                        color: order.status == 'completed' ? Colors.green : Colors.amber,
                       )),
                     ),
                   ],
@@ -89,7 +89,6 @@ class OrderDetailScreen extends ConsumerWidget {
                         const Text('Order Summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 12),
                         _summaryRow('Subtotal', '₵${order.subtotal.toStringAsFixed(2)}'),
-                        _summaryRow('Delivery Fee', '₵${order.deliveryFee.toStringAsFixed(2)}'),
                         if (order.discount > 0) _summaryRow('Discount', '-₵${order.discount.toStringAsFixed(2)}', isNegative: true),
                         const Divider(),
                         _summaryRow('Total', '₵${order.total.toStringAsFixed(2)}', isTotal: true),
@@ -98,38 +97,60 @@ class OrderDetailScreen extends ConsumerWidget {
                   ),
                 ),
 
-                if (order.deliveries != null && order.deliveries!.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  const Text('Delivery', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  ...order.deliveries!.map((d) => Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Status: ${d.status.toUpperCase()}', style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: d.status == 'delivered' ? Colors.green : Colors.amber,
-                          )),
-                          const SizedBox(height: 8),
-                          Text('Pickup: ${d.pickupAddress}', style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
-                          Text('Deliver to: ${d.deliveryAddress}', style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
-                          if (d.estimatedDeliveryTime != null)
-                            Text('Est: ${_formatDate(d.estimatedDeliveryTime!)}', style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
-                          if (d.partner != null) ...[
-                            const SizedBox(height: 8),
-                            Text('Partner: ${d.partner!['full_name'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.w500)),
-                            Text('${d.partner!['vehicle_type'] ?? ''} - ${d.partner!['vehicle_number'] ?? ''}', style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                const SizedBox(height: 24),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Escrow', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: order.isEscrowHeld ? Colors.blue.withOpacity(0.1) :
+                                       order.isEscrowReleased ? Colors.green.withOpacity(0.1) :
+                                       order.isDisputed ? Colors.red.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(order.escrowStatus.toUpperCase(), style: TextStyle(
+                                fontSize: 10, fontWeight: FontWeight.w600,
+                                color: order.isEscrowHeld ? Colors.blue :
+                                       order.isEscrowReleased ? Colors.green :
+                                       order.isDisputed ? Colors.red : Colors.grey,
+                              )),
+                            ),
                           ],
+                        ),
+                        if (order.escrowHeldAmount > 0) ...[
+                          const SizedBox(height: 8),
+                          _summaryRow('Held Amount', '₵${order.escrowHeldAmount.toStringAsFixed(2)}'),
                         ],
-                      ),
+                        if (order.escrowExpiresAt != null && order.isEscrowHeld)
+                          _summaryRow('Auto-release', _formatDate(order.escrowExpiresAt!)),
+                      ],
                     ),
-                  )),
+                  ),
+                ),
+
+                if (order.isEscrowHeld) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showDisputeDialog(context, ref, order.id, order.businessName ?? 'Seller'),
+                      icon: const Icon(Icons.warning_amber, color: Colors.red),
+                      label: const Text('Raise Dispute', style: TextStyle(color: Colors.red)),
+                      style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.red)),
+                    ),
+                  ),
                 ],
 
                 if (order.isCancellable) ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -175,6 +196,48 @@ class OrderDetailScreen extends ConsumerWidget {
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
             color: isNegative ? Colors.green : (isTotal ? const Color(0xFF059669) : null),
           )),
+        ],
+      ),
+    );
+  }
+
+  void _showDisputeDialog(BuildContext context, WidgetRef ref, String orderId, String sellerName) {
+    final reasonCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Raise Dispute'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Issue with order from $sellerName?', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              items: ['Item not received', 'Wrong item', 'Damaged item', 'Quality issue', 'Seller unresponsive', 'Other']
+                  .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                  .toList(),
+              onChanged: (_) {},
+              decoration: InputDecoration(labelText: 'Reason', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: descCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(labelText: 'Description', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(orderListProvider.notifier).raiseDispute(orderId, 'dispute', descCtrl.text);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Submit Dispute'),
+          ),
         ],
       ),
     );

@@ -27,9 +27,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       color: AppColors.gold,
     ),
     _OnboardingPage(
-      icon: Icons.local_shipping,
-      title: 'Fast Delivery Across Ghana',
-      description: 'Get your orders delivered to your doorstep with real-time tracking.',
+      icon: Icons.store,
+      title: 'Direct from Farmers',
+      description: 'Fresh produce sourced directly from Ghanaian farms at the best prices.',
       color: AppColors.earth,
     ),
   ];

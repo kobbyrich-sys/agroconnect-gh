@@ -8,7 +8,7 @@ export type NotificationType =
   | 'promotion'
   | 'system'
   | 'verification'
-  | 'delivery';
+  | 'withdrawal';
 
 export interface Notification {
   id: string;

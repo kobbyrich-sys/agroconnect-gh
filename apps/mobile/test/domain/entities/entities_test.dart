@@ -107,15 +107,15 @@ void main() {
     test('fromJson parses correctly', () {
       final json = {
         'id': 'notif1',
-        'type': 'order_shipped',
-        'title': 'Order Shipped',
-        'message': 'Your order has shipped',
+        'type': 'order_update',
+        'title': 'Order Confirmed',
+        'message': 'Your order has been confirmed',
         'is_read': false,
         'data': {'order_id': 'ord1'},
         'created_at': '2026-07-08T12:00:00Z',
       };
       final n = AppNotification.fromJson(json);
-      expect(n.title, 'Order Shipped');
+      expect(n.title, 'Order Confirmed');
       expect(n.data?['order_id'], 'ord1');
     });
   });
@@ -138,7 +138,7 @@ void main() {
     test('fromJson parses correctly', () {
       final json = {
         'id': 'tx1',
-        'type': 'payment',
+        'type': 'sale',
         'amount': '250.00',
         'status': 'completed',
         'description': 'Order payment',

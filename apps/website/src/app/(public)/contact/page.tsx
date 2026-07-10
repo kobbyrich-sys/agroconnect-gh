@@ -5,20 +5,20 @@ import { Suspense } from "react";
 import { Section, SectionHeader, FadeIn } from "@/components/ui";
 import { ContactForm, QuotationForm } from "@/components/forms";
 
-const serviceNames: Record<string, string> = {
-  "cctv-installation": "CCTV Installation",
-  "access-control": "Access Control Systems",
-  "network-infrastructure": "Network Infrastructure",
-  "workstation-setup": "Workstation Setup",
-  "it-support": "IT Support",
-  "preventive-maintenance": "Preventive Maintenance",
+const productCategories: Record<string, string> = {
+  vegetables: "Fresh Vegetables",
+  fruits: "Fresh Fruits",
+  grains: "Grains & Cereals",
+  livestock: "Livestock & Poultry",
+  dairy: "Dairy Products",
+  equipment: "Farming Equipment",
 };
 
 function ContactContent() {
   const searchParams = useSearchParams();
-  const serviceParam = searchParams.get("service");
+  const categoryParam = searchParams.get("product");
 
-  const defaultService = serviceParam ? serviceNames[serviceParam] : undefined;
+  const defaultService = categoryParam ? productCategories[categoryParam] : undefined;
 
   return (
     <>
@@ -26,7 +26,7 @@ function ContactContent() {
         <FadeIn>
           <SectionHeader
             title="Get in Touch"
-            subtitle="Have a project in mind? Reach out and we'll help you find the right solution."
+            subtitle="Have a question or want to partner with us? We'd love to hear from you."
           />
         </FadeIn>
         <div className="mx-auto max-w-5xl">
@@ -35,27 +35,27 @@ function ContactContent() {
               {[
                   {
                     label: "Email",
-                    value: "transdelsetups@gmail.com",
-                    href: "mailto:transdelsetups@gmail.com",
+                    value: "support@agroconnectgh.com",
+                    href: "mailto:support@agroconnectgh.com",
                   },
                   {
                     label: "Phone",
-                    value: "+233 557 410 369",
-                    href: "tel:+233557410369",
+                    value: "+233 50 123 4567",
+                    href: "tel:+233501234567",
                   },
                   {
                     label: "Phone",
-                    value: "+233 538 134 778",
-                    href: "tel:+233538134778",
+                    value: "+233 50 765 4321",
+                    href: "tel:+233507654321",
                   },
                   {
                     label: "WhatsApp",
                     value: "Chat with us",
-                    href: "https://wa.me/233557410369",
+                    href: "https://wa.me/233501234567",
                   },
                   {
                     label: "Location",
-                    value: "Tema, Ghana",
+                    value: "Accra, Ghana",
                   },
               ].map((c) => (
                 <div key={c.label}>
@@ -67,7 +67,7 @@ function ContactContent() {
                       href={c.href}
                       target={c.href.startsWith("http") ? "_blank" : undefined}
                       rel="noopener noreferrer"
-                      className="mt-1 block text-lg font-medium text-brand-700 hover:underline"
+                      className="mt-1 block text-lg font-medium text-emerald-700 hover:underline"
                     >
                       {c.value}
                     </a>
@@ -91,8 +91,8 @@ function ContactContent() {
       <Section dark>
         <FadeIn>
           <SectionHeader
-            title="Request a Quotation"
-            subtitle="Tell us about your project and we'll provide a detailed quote."
+            title="Sell on AgroConnect GH"
+            subtitle="Tell us about your farm or business and we'll help you get started."
           />
         </FadeIn>
         <FadeIn delay={0.1}>

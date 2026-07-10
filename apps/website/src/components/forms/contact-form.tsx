@@ -91,7 +91,7 @@ export function ContactForm() {
         </div>
         <div>
           <label htmlFor="company" className="mb-1 block text-sm font-medium text-gray-700">
-            Company
+            Farm / Business
           </label>
           <input
             id="company"

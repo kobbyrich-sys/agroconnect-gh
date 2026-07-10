@@ -5,13 +5,9 @@ export type OrderStatus =
   | 'pending'
   | 'confirmed'
   | 'processing'
-  | 'packed'
-  | 'shipped'
-  | 'out_for_delivery'
-  | 'delivered'
+  | 'ready_for_pickup'
   | 'completed'
   | 'cancelled'
-  | 'returned'
   | 'refunded';
 
 export type PaymentStatus = 'pending' | 'partial' | 'paid' | 'failed' | 'refunded';
@@ -38,6 +34,8 @@ export interface Cart {
   updated_at: Timestamp;
 }
 
+import type { EscrowStatus, EscrowReleaseType } from './escrow';
+
 export interface Order {
   id: string;
   order_number: string;
@@ -47,18 +45,21 @@ export interface Order {
   status: OrderStatus;
   payment_status: PaymentStatus;
   subtotal: number;
-  delivery_fee: number;
   discount: number;
   commission: number;
   total: number;
   currency: string;
-  shipping_address_id?: string;
-  shipping_address?: Address;
-  delivery_id?: string;
   notes?: string;
   is_read: boolean;
   paid_at?: Timestamp;
-  delivered_at?: Timestamp;
+  completed_at?: Timestamp;
+  escrow_status: EscrowStatus;
+  escrow_held_amount?: number;
+  escrow_released_at?: Timestamp;
+  escrow_release_type?: EscrowReleaseType;
+  escrow_expires_at?: Timestamp;
+  seller_accepted_at?: Timestamp;
+  buyer_confirmed_at?: Timestamp;
   created_at: Timestamp;
   updated_at: Timestamp;
 }

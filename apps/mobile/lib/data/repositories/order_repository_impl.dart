@@ -37,4 +37,16 @@ class OrderRepositoryImpl implements OrderRepository {
     final res = await _ds.cancelOrder(id);
     if (res['success'] != true) throw Exception(res['error'] ?? 'Failed to cancel order');
   }
+
+  @override
+  Future<void> updateOrderStatus(String id, String action) async {
+    final res = await _ds.updateOrderStatus(id, action);
+    if (res['success'] != true) throw Exception(res['error'] ?? 'Failed to update order status');
+  }
+
+  @override
+  Future<void> raiseDispute(String orderId, String reason, String description) async {
+    final res = await _ds.raiseDispute(orderId, reason, description);
+    if (res['success'] != true) throw Exception(res['error'] ?? 'Failed to raise dispute');
+  }
 }

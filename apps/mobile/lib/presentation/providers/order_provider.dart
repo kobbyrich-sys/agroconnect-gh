@@ -32,7 +32,21 @@ class OrderListNotifier extends StateNotifier<AsyncValue<List<Order>>> {
 
   Future<void> cancelOrder(String id) async {
     try {
-      await _repo.cancelOrder(id);
+      await _repo.updateOrderStatus(id, 'cancel');
+      await load(status: _statusFilter);
+    } catch (_) {}
+  }
+
+  Future<void> updateStatus(String id, String action) async {
+    try {
+      await _repo.updateOrderStatus(id, action);
+      await load(status: _statusFilter);
+    } catch (_) {}
+  }
+
+  Future<void> raiseDispute(String orderId, String reason, String description) async {
+    try {
+      await _repo.raiseDispute(orderId, reason, description);
       await load(status: _statusFilter);
     } catch (_) {}
   }

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/order_provider.dart';
 
-final _statusTabs = <String?>[null, 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-final _statusLabels = ['All', 'Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+final _statusTabs = <String?>[null, 'pending', 'confirmed', 'processing', 'completed', 'cancelled'];
+final _statusLabels = ['All', 'Pending', 'Confirmed', 'Processing', 'Completed', 'Cancelled'];
 
 class OrderListScreen extends ConsumerStatefulWidget {
   const OrderListScreen({super.key});
@@ -121,8 +121,7 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
       case 'pending': color = Colors.amber; break;
       case 'confirmed': color = Colors.blue; break;
       case 'processing': color = Colors.indigo; break;
-      case 'shipped': color = Colors.purple; break;
-      case 'delivered': color = Colors.green; break;
+      case 'completed': color = Colors.green; break;
       case 'cancelled': color = Colors.red; break;
       default: color = Colors.grey;
     }

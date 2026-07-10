@@ -46,6 +46,7 @@ class WalletScreen extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
+                              _statItem('Pending', '₵${wallet.pendingBalance.toStringAsFixed(2)}'),
                               _statItem('Earned', '₵${wallet.totalEarned.toStringAsFixed(2)}'),
                               _statItem('Withdrawn', '₵${wallet.totalWithdrawn.toStringAsFixed(2)}'),
                             ],
@@ -84,16 +85,16 @@ class WalletScreen extends ConsumerWidget {
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: t.type == 'credit' ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                            child: Icon(t.type == 'credit' ? Icons.arrow_downward : Icons.arrow_upward, color: t.type == 'credit' ? Colors.green : Colors.red, size: 20),
+                            backgroundColor: t.type == 'sale' || t.type == 'bonus' || t.type == 'adjustment' || t.type == 'manual_credit' ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                            child: Icon(t.type == 'sale' || t.type == 'bonus' || t.type == 'adjustment' || t.type == 'manual_credit' ? Icons.arrow_downward : Icons.arrow_upward, color: t.type == 'sale' || t.type == 'bonus' || t.type == 'adjustment' || t.type == 'manual_credit' ? Colors.green : Colors.red, size: 20),
                           ),
                           title: Text(t.description ?? t.type, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
                           subtitle: Text(_formatDate(t.createdAt), style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                           trailing: Text(
-                            '${t.type == 'credit' ? '+' : '-'}₵${t.amount.toStringAsFixed(2)}',
+                            '${t.type == 'sale' || t.type == 'bonus' || t.type == 'adjustment' || t.type == 'manual_credit' ? '+' : '-'}₵${t.amount.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: t.type == 'credit' ? Colors.green : Colors.red,
+                              color: t.type == 'sale' || t.type == 'bonus' || t.type == 'adjustment' || t.type == 'manual_credit' ? Colors.green : Colors.red,
                             ),
                           ),
                         ),
@@ -136,44 +137,72 @@ class WalletScreen extends ConsumerWidget {
   }
 
   void _showWithdrawDialog(BuildContext context, WidgetRef ref, double balance) {
-    final controller = TextEditingController();
+    final amountCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
+    final accountCtrl = TextEditingController();
+    String network = 'MTN';
+    String? bankName;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Withdraw Funds'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Amount (₵)',
-                hintText: 'Max: ₵${balance.toStringAsFixed(2)}',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Withdraw Funds'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: amountCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Amount (₵)',
+                  hintText: 'Min: ₵50 - Max: ₵${balance.toStringAsFixed(2)}',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              decoration: InputDecoration(labelText: 'Bank Name', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              decoration: InputDecoration(labelText: 'Account Number', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              decoration: InputDecoration(labelText: 'Account Name', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: network,
+                items: ['MTN', 'Vodafone', 'AirtelTigo', 'Bank Transfer'].map((n) => DropdownMenuItem(value: n, child: Text(n))).toList(),
+                onChanged: (v) { if (v != null) { setState(() { network = v; }); }},
+                decoration: InputDecoration(labelText: 'Network', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+              ),
+              const SizedBox(height: 8),
+              if (network == 'Bank Transfer')
+                TextField(
+                  decoration: InputDecoration(labelText: 'Bank Name', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+                  onChanged: (v) => bankName = v,
+                ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: accountCtrl,
+                decoration: InputDecoration(labelText: 'Account Number', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(labelText: 'Account Name', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () async {
+                final amount = double.tryParse(amountCtrl.text);
+                if (amount == null || amount < 50) return;
+                Navigator.pop(ctx);
+                await ref.read(walletProvider.notifier).withdraw(amount, {
+                  'account_name': nameCtrl.text,
+                  'account_number': accountCtrl.text,
+                  'network': network == 'Bank Transfer' ? 'bank' : network,
+                  'bank_name': bankName,
+                });
+              },
+              child: const Text('Submit'),
             ),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Submit'),
-          ),
-        ],
       ),
     );
   }

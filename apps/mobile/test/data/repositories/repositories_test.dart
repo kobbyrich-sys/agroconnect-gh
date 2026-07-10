@@ -124,7 +124,7 @@ void main() {
           .thenAnswer((_) async => {
         'success': true,
         'notifications': [
-          {'id': 'n1', 'type': 'order_shipped', 'title': 'Shipped', 'message': 'Your order shipped', 'created_at': '2026-01-01T00:00:00Z'},
+          {'id': 'n1', 'type': 'order_update', 'title': 'Confirmed', 'message': 'Your order confirmed', 'created_at': '2026-01-01T00:00:00Z'},
         ],
       });
 
@@ -163,7 +163,7 @@ void main() {
       when(() => ds.getWallet()).thenAnswer((_) async => {
         'success': true,
         'transactions': [
-          {'id': 'tx1', 'type': 'payment', 'amount': '100.00', 'status': 'completed', 'created_at': '2026-01-01T00:00:00Z'},
+          {'id': 'tx1', 'type': 'sale', 'amount': '100.00', 'status': 'completed', 'created_at': '2026-01-01T00:00:00Z'},
         ],
       });
 

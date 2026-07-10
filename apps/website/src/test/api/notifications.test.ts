@@ -35,7 +35,7 @@ describe('notifications API', () => {
             order: vi.fn(() => ({
               range: vi.fn(() => ({
                 data: [
-                  { id: 'n1', title: 'Order Shipped', message: 'Your order has shipped', is_read: false, created_at: '2026-07-08T12:00:00Z' },
+                  { id: 'n1', title: 'Order Confirmed', message: 'Your order has been confirmed', is_read: false, created_at: '2026-07-08T12:00:00Z' },
                 ],
                 count: 1,
                 error: null,

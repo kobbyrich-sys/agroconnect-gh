@@ -53,7 +53,7 @@ class SellerOrdersScreen extends ConsumerWidget {
                               Text(o.orderNumber, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                               Text(o.status.toUpperCase(), style: TextStyle(
                                 fontSize: 11, fontWeight: FontWeight.w600,
-                                color: o.status == 'delivered' ? Colors.green : Colors.amber,
+                                color: o.status == 'completed' ? Colors.green : Colors.amber,
                               )),
                             ],
                           ),

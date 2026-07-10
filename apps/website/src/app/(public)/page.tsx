@@ -12,7 +12,7 @@ const categories = [
 const features = [
   { title: 'Direct from Farmers', desc: 'Fresh produce sourced directly from Ghanaian farms, no middlemen.' },
   { title: 'Secure Payments', desc: 'Protected transactions with Mobile Money, Paystack, and bank transfer.' },
-  { title: 'Fast Delivery', desc: 'Reliable delivery across all 16 regions of Ghana with real-time tracking.' },
+  { title: 'Pickup & Delivery', desc: 'Coordinate directly with sellers for convenient pickup or private delivery.' },
   { title: 'Verified Sellers', desc: 'All sellers are verified with Ghana Card and business registration.' },
 ];
 

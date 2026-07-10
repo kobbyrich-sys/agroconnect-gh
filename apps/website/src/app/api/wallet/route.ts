@@ -21,9 +21,29 @@ export async function GET() {
     .order('created_at', { ascending: false })
     .limit(20);
 
+  const { data: summary } = await supabase
+    .from('transactions')
+    .select('type, amount')
+    .eq('wallet_id', wallet?.id || '');
+
+  const sellerSummary = {
+    total_earned: (summary || [])
+      .filter((t: any) => t.type === 'sale')
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0),
+    total_withdrawn: (summary || [])
+      .filter((t: any) => t.type === 'withdrawal')
+      .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0),
+  };
+
   return NextResponse.json({
     success: true,
-    wallet: wallet || { balance: 0, locked_balance: 0, currency: 'GHS' },
+    wallet: {
+      balance: wallet?.balance || 0,
+      pending_balance: wallet?.pending_balance || 0,
+      total_earned: wallet?.total_earned || sellerSummary.total_earned,
+      total_withdrawn: wallet?.total_withdrawn || sellerSummary.total_withdrawn,
+      currency: 'GHS',
+    },
     transactions: transactions || [],
   });
 }
@@ -36,20 +56,10 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { amount, method, account_name, account_number, bank_name, mobile_provider } = body;
+  const { amount, account_name, account_number, network, bank_name } = body;
 
-  if (!amount || amount < 10) {
-    return NextResponse.json({ success: false, error: 'Minimum withdrawal is ₵10' }, { status: 400 });
-  }
-
-  const { data: business } = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single();
-
-  if (!business) {
-    return NextResponse.json({ success: false, error: 'Business required for withdrawals' }, { status: 403 });
+  if (!amount || amount < 50) {
+    return NextResponse.json({ success: false, error: 'Minimum withdrawal is ₵50' }, { status: 400 });
   }
 
   const { data: wallet } = await supabase
@@ -66,13 +76,11 @@ export async function POST(request: Request) {
     .from('withdrawal_requests')
     .insert({
       seller_id: user.id,
-      business_id: business.id,
       amount,
-      method,
       account_name,
       account_number,
-      bank_name,
-      mobile_provider,
+      network,
+      bank_name: bank_name || null,
       status: 'pending',
     })
     .select()

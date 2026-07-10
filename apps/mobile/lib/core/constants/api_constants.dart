@@ -17,7 +17,7 @@ class ApiConstants {
   static const String chat = '/chat';
   static const String notifications = '/notifications';
   static const String payments = '/payments';
-  static const String delivery = '/delivery';
+
   static const String reviews = '/reviews';
   static const String search = '/search';
   static const String upload = '/upload';

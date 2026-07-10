@@ -16,7 +16,13 @@ class WalletRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> requestWithdrawal(double amount, Map<String, dynamic> bankDetails) async {
-    final res = await _dio.post('${ApiConstants.wallet}/withdraw', data: {'amount': amount, 'bank_details': bankDetails});
+    final res = await _dio.post('${ApiConstants.wallet}', data: {
+      'amount': amount,
+      'account_name': bankDetails['account_name'],
+      'account_number': bankDetails['account_number'],
+      'network': bankDetails['network'],
+      'bank_name': bankDetails['bank_name'],
+    });
     return res.data as Map<String, dynamic>;
   }
 }

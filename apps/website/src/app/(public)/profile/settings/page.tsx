@@ -62,7 +62,7 @@ export default function SettingsPage() {
             <div className="mt-5 space-y-4">
               {[
                 { key: 'email_notifications', label: 'Email Notifications', desc: 'Receive order updates and promotions' },
-                { key: 'sms_notifications', label: 'SMS Notifications', desc: 'Receive delivery updates via SMS' },
+                { key: 'sms_notifications', label: 'SMS Notifications', desc: 'Receive order updates via SMS' },
                 { key: 'marketing_emails', label: 'Marketing Emails', desc: 'Tips, offers, and platform news' },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between">

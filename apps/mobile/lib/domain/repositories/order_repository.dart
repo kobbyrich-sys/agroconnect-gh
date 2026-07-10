@@ -5,4 +5,6 @@ abstract class OrderRepository {
   Future<Order> getOrder(String id);
   Future<Order> createOrder(Map<String, dynamic> data);
   Future<void> cancelOrder(String id);
+  Future<void> updateOrderStatus(String id, String action);
+  Future<void> raiseDispute(String orderId, String reason, String description);
 }
