@@ -23,8 +23,8 @@ export async function GET(request: Request) {
     .select(`
       *,
       product_images!left(image_url, alt_text, is_primary, order_index),
-      categories!inner(name, slug),
-      businesses!inner(business_name, business_logo, business_type, gps_address)
+      categories!left(name, slug),
+      businesses!left(business_name, business_logo, business_type, gps_address)
     `, { count: 'exact' })
     .eq('is_published', true)
     .eq('status', 'active');
