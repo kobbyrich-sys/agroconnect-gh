@@ -1,25 +1,10 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import { Section, SectionHeader, FadeIn } from "@/components/ui";
-import { ContactForm, QuotationForm } from "@/components/forms";
+import Link from "next/link";
+import { Section, SectionHeader, FadeIn, buttonVariants } from "@/components/ui";
+import { ContactForm } from "@/components/forms";
 
-const productCategories: Record<string, string> = {
-  vegetables: "Fresh Vegetables",
-  fruits: "Fresh Fruits",
-  grains: "Grains & Cereals",
-  livestock: "Livestock & Poultry",
-  dairy: "Dairy Products",
-  equipment: "Farming Equipment",
-};
-
-function ContactContent() {
-  const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("product");
-
-  const defaultService = categoryParam ? productCategories[categoryParam] : undefined;
-
+export default function ContactPage() {
   return (
     <>
       <Section>
@@ -96,19 +81,16 @@ function ContactContent() {
           />
         </FadeIn>
         <FadeIn delay={0.1}>
-          <div className="mx-auto max-w-2xl">
-            <QuotationForm defaultService={defaultService} />
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="mb-6 text-lg text-gray-600">
+              Create a seller account to list your products and reach thousands of buyers across Ghana.
+            </p>
+            <Link href="/sell" className={buttonVariants({ size: "lg" })}>
+              Start Selling
+            </Link>
           </div>
         </FadeIn>
       </Section>
     </>
-  );
-}
-
-export default function ContactPage() {
-  return (
-    <Suspense>
-      <ContactContent />
-    </Suspense>
   );
 }
