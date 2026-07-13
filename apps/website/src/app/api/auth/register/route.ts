@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
+import { SignJWT } from 'jose';
 
 export async function POST(request: Request) {
   try {
@@ -43,23 +44,56 @@ export async function POST(request: Request) {
       [email.toLowerCase(), bcryptHash, JSON.stringify({ full_name, phone, role: (role === 'seller' ? 'farmer' : (role || 'buyer')) })],
     );
 
-    await pool.end();
-
     const user = result.rows[0];
 
-    return NextResponse.json(
+    const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').split('.')[0] || '';
+    const jwtSecret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET || '');
+    const now = Math.floor(Date.now() / 1000);
+
+    const accessToken = await new SignJWT({
+      sub: user.id,
+      email: user.email,
+      role: 'authenticated',
+      aud: 'authenticated',
+      iat: now,
+      exp: now + 3600,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .sign(jwtSecret);
+
+    const response = NextResponse.json(
       {
         success: true,
-        message: 'Account created. Please check your email to verify.',
+        message: 'Account created.',
         user: {
           id: user.id,
           email: user.email,
           full_name,
           role: role || 'buyer',
         },
+        session: {
+          access_token: accessToken,
+          refresh_token: accessToken,
+          expires_at: now + 3600,
+        },
       },
       { status: 201 },
     );
+
+    const cookieName = `sb-${projectRef}-auth-token`;
+    const cookieValue = JSON.stringify([accessToken, accessToken, 3600, 'bearer']);
+
+    response.cookies.set(cookieName, cookieValue, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600,
+    });
+
+    await pool.end();
+
+    return response;
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err?.message || 'Internal server error' },
