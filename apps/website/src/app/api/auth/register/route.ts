@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, createServerClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
   try {
@@ -20,14 +20,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createServerClient();
+    const adminClient = createAdminClient();
 
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await adminClient.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: { full_name, phone, role: role || 'buyer' },
-      },
+      email_confirm: false,
+      user_metadata: { full_name, phone, role: role || 'buyer' },
     });
 
     if (error) {
