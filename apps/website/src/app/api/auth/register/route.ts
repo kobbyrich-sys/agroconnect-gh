@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, createServerClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
   try {
@@ -20,41 +19,56 @@ export async function POST(request: Request) {
       );
     }
 
-    const adminClient = createAdminClient();
-
-    const { data, error } = await adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: false,
-      user_metadata: { full_name, phone, role: role || 'buyer' },
+    const { Pool } = require('pg');
+    const pool = new Pool({
+      host: process.env.SUPABASE_DB_HOST,
+      port: parseInt(process.env.SUPABASE_DB_PORT || '6543'),
+      database: 'postgres',
+      user: process.env.SUPABASE_DB_USER,
+      password: process.env.SUPABASE_DB_PASS,
+      max: 1,
+      connectionTimeoutMillis: 10000,
     });
 
-    if (error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 400 },
+    const bcryptHash = await new Promise<string>((resolve, reject) => {
+      pool.query(
+        `SELECT crypt($1, gen_salt('bf', 10)) AS hash`,
+        [password],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result.rows[0].hash);
+        },
       );
-    }
+    });
+
+    const result = await pool.query(
+      `INSERT INTO auth.users (instance_id, email, encrypted_password, email_confirmed_at, raw_user_meta_data, raw_app_meta_data, created_at, updated_at, confirmation_token, email_change, email_change_token_new, recovery_token)
+       VALUES ('00000000-0000-0000-0000-000000000000', $1, $2, NOW(), $3::jsonb, '{"provider":"email","providers":["email"]}', NOW(), NOW(), '', '', '', '')
+       RETURNING id, email`,
+      [email.toLowerCase(), bcryptHash, JSON.stringify({ full_name, phone, role: (role === 'seller' ? 'farmer' : (role || 'buyer')) })],
+    );
+
+    await pool.end();
+
+    const user = result.rows[0];
 
     return NextResponse.json(
       {
         success: true,
         message: 'Account created. Please check your email to verify.',
-        user: data.user
-          ? {
-              id: data.user.id,
-              email: data.user.email,
-              full_name,
-              role: role || 'buyer',
-            }
-          : null,
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name,
+          role: role || 'buyer',
+        },
       },
       { status: 201 },
     );
-  } catch (err) {
+  } catch (err: any) {
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 },
+      { success: false, error: err?.message || 'Internal server error' },
+      { status: 400 },
     );
   }
 }
