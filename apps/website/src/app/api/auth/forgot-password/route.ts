@@ -1,17 +1,12 @@
-import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
-import { createHmac, randomBytes } from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
+import { getUserByEmail } from '@agroconnect/shared';
+import { SignJWT } from 'jose';
 
-function createResetToken(email: string): string {
-  const exp = Date.now() + 3600000;
-  const payload = Buffer.from(JSON.stringify({ email, exp })).toString('base64url');
-  const sig = createHmac('sha256', process.env.SUPABASE_JWT_SECRET!)
-    .update(payload)
-    .digest('base64url');
-  return `${payload}.${sig}`;
-}
+const JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY!;
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
@@ -22,60 +17,51 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createServerClient();
-    const { data: users } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
+    const user = await getUserByEmail(email);
 
-    if (!users) {
+    // Don't reveal if the account exists
+    if (!user) {
       return NextResponse.json({
         success: true,
-        message: 'If an account exists with this email, a reset link has been sent.',
+        message: 'If an account exists, a password reset link has been sent.',
       });
     }
 
-    const token = createResetToken(email);
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${token}`;
+    const token = await new SignJWT({ sub: user.user_id, email: user.user_email })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(JWT_SECRET);
 
-    const sendgridRes = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const resetUrl = `${APP_URL}/auth/reset-password?token=${token}`;
+
+    await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email }] }],
-        from: { email: 'noreply@agroconnectgh.vercel.app', name: 'AgroConnect GH' },
-        subject: 'Reset your password',
-        content: [
-          {
-            type: 'text/html',
-            value: `
-              <h2>Reset your password</h2>
-              <p>We received a request to reset your password.</p>
-              <p><a href="${resetLink}">Reset password</a></p>
-              <p>This link expires in 1 hour.</p>
-              <p>If you didn't request this, you can safely ignore this email.</p>
-            `.trim(),
-          },
-        ],
+        from: { email: 'noreply@agroconnectgh.com', name: 'AgroConnect GH' },
+        subject: 'Reset your AgroConnect password',
+        content: [{
+          type: 'text/html',
+          value: `<h2>Password Reset</h2>
+<p>Click the link below to reset your password (expires in 1 hour):</p>
+<a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#047857;color:white;text-decoration:none;border-radius:6px;">Reset Password</a>
+<p>Or copy this link: ${resetUrl}</p>`,
+        }],
       }),
     });
 
-    if (!sendgridRes.ok) {
-      const body = await sendgridRes.text();
-      console.error('SendGrid error:', sendgridRes.status, body);
-    }
-
     return NextResponse.json({
       success: true,
-      message: 'If an account exists with this email, a reset link has been sent.',
+      message: 'If an account exists, a password reset link has been sent.',
     });
   } catch {
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Something went wrong. Please try again.' },
       { status: 500 },
     );
   }

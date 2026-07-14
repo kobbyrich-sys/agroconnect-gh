@@ -1,71 +1,38 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
-import { jwtVerify } from 'jose';
+import { verifySessionJWT, getSessionToken, getProfileById } from '@agroconnect/shared';
 
 export async function GET() {
-  const supabase = await createServerClient();
-
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (user && !error) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        full_name: profile?.full_name,
-        phone: profile?.phone,
-        avatar_url: profile?.avatar_url,
-        role: profile?.role || 'buyer',
-        status: profile?.status,
-        is_email_verified: !!user.email_confirmed_at,
-      },
-    });
-  }
-
-  const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').split('.')[0] || '';
-  const cookieStore = await cookies();
-  const authCookie = cookieStore.get(`sb-${projectRef}-auth-token`);
-
-  if (!authCookie?.value) {
-    return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
-  }
-
   try {
-    const parts = JSON.parse(authCookie.value);
-    const token = Array.isArray(parts) ? parts[0] : parts;
+    const token = await getSessionToken();
 
-    const jwtSecret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET || '');
-    const { payload } = await jwtVerify(token, jwtSecret);
+    if (!token) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
 
-    const supabase = await createServerClient();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', payload.sub)
-      .single();
+    const payload = await verifySessionJWT(token);
+
+    if (!payload || !payload.sub) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    const profile = await getProfileById(payload.sub);
 
     return NextResponse.json({
-      success: true,
+      authenticated: true,
       user: {
         id: payload.sub,
         email: payload.email,
-        full_name: profile?.full_name,
+        full_name: payload.user_metadata?.full_name || profile?.full_name,
         phone: profile?.phone,
         avatar_url: profile?.avatar_url,
-        role: profile?.role || 'buyer',
-        status: profile?.status,
-        is_email_verified: true,
+        role: profile?.role || payload.role,
+        status: profile?.status || 'active',
+        is_email_verified: profile?.is_email_verified || false,
+        is_phone_verified: profile?.is_phone_verified || false,
+        created_at: profile?.created_at,
       },
     });
   } catch {
-    return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+    return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 }

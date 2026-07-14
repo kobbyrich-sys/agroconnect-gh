@@ -1,176 +1,174 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function RegisterPage() {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('buyer');
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [form, setForm] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    password: '',
+    role: 'buyer',
+  });
   const [error, setError] = useState('');
-  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
+  const updateField = (field: string, value: string) =>
+    setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, full_name: fullName, phone, role }),
-    });
-
-    const data = await res.json();
-    setLoading(false);
-
-    if (data.success) {
-      setDone(true);
-    } else {
-      setError(data.error || 'Something went wrong');
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
     }
-  }
 
-  if (done) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-            <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Account created</h1>
-          <p className="mt-3 text-gray-600">
-            Please check your email at <strong>{email}</strong> to verify your account.
-          </p>
-          <Link
-            href="/login"
-            className="mt-8 inline-block rounded-lg bg-emerald-700 px-7 py-3 text-sm font-semibold text-white hover:bg-emerald-800"
-          >
-            Sign in
-          </Link>
-        </div>
-      </div>
-    );
-  }
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Registration failed');
+        return;
+      }
+
+      router.push('/register/success');
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+    <div className="flex min-h-[80vh] items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-        <p className="mt-2 text-gray-600">
-          Join AgroConnectGH as a buyer or seller.
-        </p>
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
+          <p className="mt-2 text-gray-600">Join AgroConnect GH marketplace</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          )}
+
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-              Full name
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Full Name</label>
             <input
-              id="fullName"
               type="text"
+              value={form.full_name}
+              onChange={e => updateField('full_name', e.target.value)}
               required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               placeholder="John Doe"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email address
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
-              id="email"
               type="email"
+              value={form.email}
+              onChange={e => updateField('email', e.target.value)}
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-              Phone (optional)
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Phone (optional)</label>
             <input
-              id="phone"
               type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              value={form.phone}
+              onChange={e => updateField('phone', e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               placeholder="+233 XX XXX XXXX"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="At least 8 characters"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">I want to</label>
-            <div className="mt-2 grid grid-cols-2 gap-3">
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <div className="relative mt-1">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={e => updateField('password', e.target.value)}
+                required
+                minLength={8}
+                className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                placeholder="Min. 8 characters"
+              />
               <button
                 type="button"
-                onClick={() => setRole('buyer')}
-                className={`rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
-                  role === 'buyer'
-                    ? 'border-emerald-700 bg-emerald-50 text-emerald-800'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                Buy products
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('seller')}
-                className={`rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
-                  role === 'seller'
-                    ? 'border-emerald-700 bg-emerald-50 text-emerald-800'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                Sell products
+                {showPassword ? (
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                  </svg>
+                ) : (
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">I am a</label>
+            <div className="mt-1 grid grid-cols-2 gap-3">
+              {[
+                { value: 'buyer', label: 'Buyer' },
+                { value: 'farmer', label: 'Farmer' },
+                { value: 'manufacturer', label: 'Manufacturer' },
+                { value: 'wholesaler', label: 'Wholesaler' },
+              ].map(option => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => updateField('role', option.value)}
+                  className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                    form.role === option.value
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-50"
+            className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-50"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link href="/login" className="font-semibold text-emerald-700 hover:text-emerald-800">
+          <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700">
             Sign in
           </Link>
         </p>

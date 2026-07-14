@@ -1,54 +1,59 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
-    const res = await fetch('/api/auth/forgot-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
 
-    const data = await res.json();
-    setLoading(false);
+      const data = await res.json();
 
-    if (data.success) {
+      if (!res.ok) {
+        setError(data.error || 'Something went wrong');
+        return;
+      }
+
       setSent(true);
-    } else {
-      setError(data.error || 'Something went wrong');
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   if (sent) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4">
+      <div className="flex min-h-[80vh] items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-            <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+            <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Check your email</h1>
-          <p className="mt-3 text-gray-600">
-            If an account exists for <strong>{email}</strong>, we&apos;ve sent a password reset link.
+          <h1 className="text-xl font-bold text-gray-900">Check your email</h1>
+          <p className="mt-2 text-gray-600">
+            If an account exists with that email, we have sent a password reset link.
           </p>
-          <p className="mt-2 text-sm text-gray-500">The link expires in 1 hour.</p>
           <Link
             href="/login"
-            className="mt-8 inline-block text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+            className="mt-6 inline-block text-sm font-medium text-emerald-600 hover:text-emerald-700"
           >
-            Back to login
+            Back to sign in
           </Link>
         </div>
       </div>
@@ -56,46 +61,45 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
+    <div className="flex min-h-[80vh] items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-900">Forgot password?</h1>
-        <p className="mt-2 text-gray-600">
-          Enter your email and we&apos;ll send you a reset link.
-        </p>
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Forgot password?</h1>
+          <p className="mt-2 text-gray-600">
+            Enter your email and we will send you a reset link
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          )}
+
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email address
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
-              id="email"
               type="email"
-              required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={e => setEmail(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               placeholder="you@example.com"
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
-
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-50"
+            className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-50"
           >
-            {loading ? 'Sending...' : 'Send reset link'}
+            {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-gray-600">
           Remember your password?{' '}
-          <Link href="/login" className="font-semibold text-emerald-700 hover:text-emerald-800">
-            Log in
+          <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700">
+            Sign in
           </Link>
         </p>
       </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { NotificationBell } from '@/components/layout/notification-bell';
+import { useAuth } from '@/lib/auth';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -14,6 +15,7 @@ const navLinks = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { user, loading, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-xs">
@@ -38,19 +40,54 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <NotificationBell />
-          <Link
-            href="/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-800"
-          >
-            Get Started
-          </Link>
+          {!loading && user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/orders"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              >
+                Orders
+              </Link>
+              <NotificationBell />
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+                  {(user.full_name || user.email)[0].toUpperCase()}
+                </span>
+                {user.full_name || user.email}
+              </Link>
+              <button
+                onClick={signOut}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-700"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <NotificationBell />
+              <Link
+                href="/login"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-800"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
         <button className="rounded-lg p-2 md:hidden" onClick={() => setOpen(!open)}>
@@ -78,20 +115,50 @@ export function Header() {
               </Link>
             ))}
             <hr className="my-2" />
-            <Link
-              href="/login"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700"
-              onClick={() => setOpen(false)}
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-lg bg-emerald-700 px-4 py-2 text-center text-sm font-semibold text-white"
-              onClick={() => setOpen(false)}
-            >
-              Get Started
-            </Link>
+            {!loading && user ? (
+              <>
+                <div className="px-4 py-2 text-sm font-medium text-gray-900">
+                  Signed in as {user.full_name || user.email}
+                </div>
+                <Link
+                  href="/dashboard"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+                  onClick={() => setOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/orders"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+                  onClick={() => setOpen(false)}
+                >
+                  Orders
+                </Link>
+                <button
+                  onClick={() => { signOut(); setOpen(false); }}
+                  className="flex w-full rounded-lg px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+                  onClick={() => setOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+                  onClick={() => setOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       )}

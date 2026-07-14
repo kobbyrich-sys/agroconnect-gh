@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+
+const SESSION_COOKIE = 'agroconnect_session';
 
 export async function POST() {
-  const supabase = await createServerClient();
-  await supabase.auth.signOut();
-
-  return NextResponse.json({ success: true, message: 'Signed out successfully' });
+  const response = NextResponse.json({ success: true, message: 'Signed out' });
+  response.cookies.delete(SESSION_COOKIE);
+  return response;
 }

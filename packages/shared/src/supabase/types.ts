@@ -8,7 +8,6 @@ export interface AuthResponse {
 
 export interface SessionData {
   access_token: string;
-  refresh_token: string;
   expires_at: number;
 }
 
@@ -36,15 +35,4 @@ export interface RegisterInput {
 export interface LoginInput {
   email: string;
   password: string;
-}
-
-export interface SellerRegistrationInput {
-  business_name: string;
-  business_type: 'farmer' | 'manufacturer' | 'wholesaler';
-  business_phone: string;
-  business_email?: string;
-  business_address: string;
-  gps_address?: string;
-  ghana_card_number: string;
-  description?: string;
 }

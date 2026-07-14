@@ -1,24 +1,10 @@
-import { NextResponse } from 'next/server';
-import { createAdminClient } from '@agroconnect/shared';
-import { createHmac } from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
+import { updatePassword } from '@agroconnect/shared';
+import { jwtVerify } from 'jose';
 
-function verifyResetToken(token: string): { email: string } | null {
-  const [payload, signature] = token.split('.');
-  if (!payload || !signature) return null;
+const JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
 
-  const expectedSig = createHmac('sha256', process.env.SUPABASE_JWT_SECRET!)
-    .update(payload)
-    .digest('base64url');
-
-  if (signature !== expectedSig) return null;
-
-  const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
-  if (Date.now() > data.exp) return null;
-
-  return { email: data.email };
-}
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { token, password } = await request.json();
 
@@ -36,47 +22,33 @@ export async function POST(request: Request) {
       );
     }
 
-    const payload = verifyResetToken(token);
-    if (!payload) {
+    let payload;
+    try {
+      const result = await jwtVerify(token, JWT_SECRET);
+      payload = result.payload;
+    } catch {
       return NextResponse.json(
         { success: false, error: 'Invalid or expired reset token' },
         { status: 400 },
       );
     }
 
-    const supabase = createAdminClient();
-
-    const { data: users } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', payload.email)
-      .maybeSingle();
-
-    if (!users) {
+    if (!payload.sub || typeof payload.sub !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 },
+        { success: false, error: 'Invalid reset token' },
+        { status: 400 },
       );
     }
 
-    const { error } = await supabase.auth.admin.updateUserById(users.id, {
-      password,
-    });
-
-    if (error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
-    }
+    await updatePassword(payload.sub, password);
 
     return NextResponse.json({
       success: true,
-      message: 'Password updated successfully',
+      message: 'Password updated successfully. You can now sign in.',
     });
   } catch {
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Failed to reset password. Please try again.' },
       { status: 500 },
     );
   }

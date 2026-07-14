@@ -1,11 +1,15 @@
-import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { NextRequest, NextResponse } from 'next/server';
+import { registerUser, createSessionJWT, getProfileById } from '@agroconnect/shared';
 import { SignJWT } from 'jose';
 
-export async function POST(request: Request) {
+const SESSION_COOKIE = 'agroconnect_session';
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
+
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, password, full_name, phone, role } = body;
+    const { email, password, full_name, phone, role } = await request.json();
 
     if (!email || !password || !full_name) {
       return NextResponse.json(
@@ -21,83 +25,108 @@ export async function POST(request: Request) {
       );
     }
 
-    const pool = new Pool({
-      host: process.env.SUPABASE_DB_HOST,
-      port: parseInt(process.env.SUPABASE_DB_PORT || '6543'),
-      database: 'postgres',
-      user: process.env.SUPABASE_DB_USER,
-      password: process.env.SUPABASE_DB_PASS,
-      max: 1,
-      connectionTimeoutMillis: 10000,
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email format' },
+        { status: 400 },
+      );
+    }
+
+    const { id: userId } = await registerUser(email, password, full_name, phone, role);
+
+    const jwt = await createSessionJWT({
+      id: userId,
+      email,
+      role: role || 'buyer',
+      full_name,
     });
 
-    const hashResult = await pool.query<{ hash: string }>(
-      `SELECT crypt($1, gen_salt('bf', 10)) AS hash`,
-      [password],
-    );
-    const bcryptHash = hashResult.rows[0].hash;
+    const profile = await getProfileById(userId);
 
-    const result = await pool.query<{ id: string; email: string }>(
-      `INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_user_meta_data, raw_app_meta_data, created_at, updated_at, confirmation_token, email_change, email_change_token_new, recovery_token)
-       VALUES (gen_random_uuid(), '00000000-0000-0000-0000-000000000000', $1, $2, NOW(), $3::jsonb, '{"provider":"email","providers":["email"]}', NOW(), NOW(), '', '', '', '')
-       RETURNING id, email`,
-      [email.toLowerCase(), bcryptHash, JSON.stringify({ full_name, phone, role: (role === 'seller' ? 'farmer' : (role || 'buyer')) })],
-    );
+    let emailSent = false;
+    try {
+      await sendVerificationEmail(email, userId);
+      emailSent = true;
+    } catch (e) {
+      emailSent = false;
+    }
 
-    const user = result.rows[0];
-
-    const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').split('.')[0] || '';
-    const jwtSecret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET || '');
-    const now = Math.floor(Date.now() / 1000);
-
-    const accessToken = await new SignJWT({
-      sub: user.id,
-      email: user.email,
-      role: 'authenticated',
-      aud: 'authenticated',
-      iat: now,
-      exp: now + 3600,
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .sign(jwtSecret);
-
-    const response = NextResponse.json(
-      {
-        success: true,
-        message: 'Account created.',
-        user: {
-          id: user.id,
-          email: user.email,
-          full_name,
-          role: role || 'buyer',
-        },
-        session: {
-          access_token: accessToken,
-          refresh_token: accessToken,
-          expires_at: now + 3600,
-        },
+    const response = NextResponse.json({
+      success: true,
+      message: emailSent ? 'Account created. Please check your email to verify.' : 'Account created, but verification email could not be sent.',
+      email_sent: emailSent,
+      user: {
+        id: userId,
+        email,
+        full_name,
+        phone,
+        role: role || 'buyer',
+        status: profile?.status || 'active',
+        is_email_verified: false,
+        is_phone_verified: false,
+        created_at: profile?.created_at || new Date().toISOString(),
       },
-      { status: 201 },
-    );
+      session: { access_token: jwt, expires_at: Math.floor(Date.now() / 1000) + 604800 },
+    }, { status: 201 });
 
-    const cookieName = `sb-${projectRef}-auth-token`;
-    const cookieValue = JSON.stringify([accessToken, accessToken, 3600, 'bearer']);
-
-    response.cookies.set(cookieName, cookieValue, {
-      path: '/',
+    response.cookies.set(SESSION_COOKIE, jwt, {
       httpOnly: true,
-      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600,
+      sameSite: 'lax',
+      path: '/',
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
-
-    await pool.end();
 
     return response;
-  } catch (err: any) {
+  } catch (error: any) {
+    if (error?.message?.includes('duplicate') || error?.message?.includes('already')) {
+      return NextResponse.json(
+        { success: false, error: 'An account with this email already exists' },
+        { status: 409 },
+      );
+    }
     return NextResponse.json(
-      { success: false, error: err?.message || 'Internal server error' },
-      { status: 400 },
+      { success: false, error: 'Registration failed. Please try again.' },
+      { status: 500 },
     );
+  }
+}
+
+async function sendVerificationEmail(email: string, userId: string) {
+  if (!SENDGRID_API_KEY) {
+    throw new Error('SENDGRID_API_KEY not configured');
+  }
+
+  const verifyToken = await new SignJWT({ sub: userId, purpose: 'email-verify' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(JWT_SECRET);
+  const verifyUrl = `${APP_URL}/verify-email?token=${verifyToken}`;
+
+  const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email }] }],
+      from: { email: 'agroconnectgh8@gmail.com', name: 'AgroConnect GH' },
+      subject: 'Verify your AgroConnect account',
+      content: [{
+        type: 'text/html',
+        value: `<h2>Welcome to AgroConnect GH!</h2>
+<p>Please verify your email by clicking the link below:</p>
+<a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#047857;color:white;text-decoration:none;border-radius:6px;">Verify Email</a>
+<p>Or copy this link: ${verifyUrl}</p>`,
+      }],
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`SendGrid error ${res.status}: ${body}`);
   }
 }
