@@ -1,16 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +20,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, remember_me: rememberMe }),
       });
 
       const data = await res.json();
@@ -33,7 +32,7 @@ export default function LoginPage() {
 
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect') || '/dashboard';
-      router.push(redirect);
+      window.location.href = redirect;
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -99,7 +98,16 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-emerald-700 focus:ring-emerald-500"
+              />
+              <span className="text-sm text-gray-600">Remember me</span>
+            </label>
             <Link href="/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-700">
               Forgot password?
             </Link>

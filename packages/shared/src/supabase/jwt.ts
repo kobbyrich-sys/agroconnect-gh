@@ -16,7 +16,8 @@ export async function createSessionJWT(user: {
   email: string;
   role: string;
   full_name?: string;
-}): Promise<string> {
+}, opts?: { expiresIn?: string }): Promise<string> {
+  const expiresIn = opts?.expiresIn || '7d';
   return new SignJWT({
     sub: user.id,
     email: user.email,
@@ -24,10 +25,10 @@ export async function createSessionJWT(user: {
     aud: 'authenticated',
     user_metadata: { full_name: user.full_name },
     app_metadata: { provider: 'email', providers: ['email'] },
-  } as SessionPayload)
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime(expiresIn)
     .setIssuer(SITE_URL)
     .sign(JWT_SECRET);
 }

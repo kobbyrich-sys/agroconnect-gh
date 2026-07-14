@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const PASSWORD_RULES = [
@@ -15,7 +14,6 @@ const PASSWORD_RULES = [
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -69,7 +67,7 @@ export default function RegisterPage() {
       }
 
       // Auto-login happened via cookie; go to dashboard
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch {
       setError('Network error. Please try again.');
     } finally {
