@@ -95,6 +95,36 @@ export async function setEmailVerified(userId: string) {
   );
 }
 
+export async function invalidateSessions(userId: string) {
+  await getPool().query(
+    `UPDATE public.profiles SET token_valid_since = NOW() WHERE id = $1`,
+    [userId],
+  );
+}
+
+export async function getTokenValidity(userId: string): Promise<Date | null> {
+  const result = await getPool().query(
+    `SELECT token_valid_since FROM public.profiles WHERE id = $1`,
+    [userId],
+  );
+  return result.rows[0]?.token_valid_since || null;
+}
+
+export async function getPasswordResetAt(userId: string): Promise<Date | null> {
+  const result = await getPool().query(
+    `SELECT last_password_reset_at FROM public.profiles WHERE id = $1`,
+    [userId],
+  );
+  return result.rows[0]?.last_password_reset_at || null;
+}
+
+export async function recordPasswordReset(userId: string) {
+  await getPool().query(
+    `UPDATE public.profiles SET last_password_reset_at = NOW() WHERE id = $1`,
+    [userId],
+  );
+}
+
 export async function closePool() {
   if (pool) {
     await pool.end();

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifySessionJWT, getSessionToken, getProfileById } from '@agroconnect/shared';
+import { verifySessionJWT, getSessionToken, getProfileById, getTokenValidity } from '@agroconnect/shared';
 
 export async function GET() {
   try {
@@ -11,8 +11,18 @@ export async function GET() {
 
     const payload = await verifySessionJWT(token);
 
-    if (!payload || !payload.sub) {
+    if (!payload || !payload.sub || !payload.iat) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    const tokenValidSince = await getTokenValidity(payload.sub);
+
+    // If token_valid_since is set and the JWT's iat is before it, the session was invalidated
+    if (tokenValidSince) {
+      const validSinceEpoch = Math.floor(new Date(tokenValidSince).getTime() / 1000);
+      if (payload.iat < validSinceEpoch) {
+        return NextResponse.json({ authenticated: false }, { status: 401 });
+      }
     }
 
     const profile = await getProfileById(payload.sub);

@@ -6,6 +6,20 @@ const JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY!;
 
+// In-memory rate limiter (per email). For production, replace with Vercel KV.
+const requests = new Map<string, number>();
+const RESEND_WINDOW_MS = 5 * 60 * 1000;
+
+function isRateLimited(email: string): boolean {
+  const now = Date.now();
+  const last = requests.get(email);
+  if (last && now - last < RESEND_WINDOW_MS) {
+    return true;
+  }
+  requests.set(email, now);
+  return false;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
@@ -15,6 +29,14 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Email is required' },
         { status: 400 },
       );
+    }
+
+    // Rate limit to prevent inbox flooding (1 request per 5 min per email)
+    if (isRateLimited(email.toLowerCase().trim())) {
+      return NextResponse.json({
+        success: true,
+        message: 'If an account exists, a password reset link has been sent.',
+      });
     }
 
     const user = await getUserByEmail(email);
