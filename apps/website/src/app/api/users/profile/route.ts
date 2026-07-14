@@ -44,6 +44,31 @@ export async function PUT(request: Request) {
     }
   }
 
+  // Persist preferences from the settings page into metadata
+  if (body.preferences) {
+    const prefs = body.preferences;
+    const { data: current } = await supabase
+      .from('profiles')
+      .select('metadata')
+      .eq('id', user.id)
+      .single();
+
+    updates.metadata = {
+      ...(current?.metadata as Record<string, unknown> || {}),
+      preferences: {
+        email_notifications: prefs.email_notifications ?? true,
+        sms_notifications: prefs.sms_notifications ?? true,
+        marketing_emails: prefs.marketing_emails ?? false,
+        language: prefs.language || 'English',
+        currency: prefs.currency || 'GHS',
+      },
+    };
+
+    if (prefs.language) {
+      updates.preferred_language = prefs.language;
+    }
+  }
+
   const { data, error } = await supabase
     .from('profiles')
     .update(updates)
