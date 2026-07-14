@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email }] }],
-        from: { email: 'noreply@agroconnectgh.com', name: 'AgroConnect GH' },
+        from: { email: 'agroconnectgh8@gmail.com', name: 'AgroConnect GH' },
         subject: 'Reset your AgroConnect password',
         content: [{
           type: 'text/html',
