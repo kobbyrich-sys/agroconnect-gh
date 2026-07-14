@@ -16,6 +16,7 @@ function VerifyEmailForm() {
   const router = useRouter();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [message, setMessage] = useState('Verifying your email...');
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -31,6 +32,10 @@ function VerifyEmailForm() {
         if (res.ok) {
           setStatus('success');
           setMessage(data.message || 'Email verified successfully!');
+          // Auto-redirect to dashboard after 3s
+          const interval = setInterval(() => {
+            setCountdown(c => { if (c <= 1) { clearInterval(interval); router.push('/dashboard'); return 0; } return c - 1; });
+          }, 1000);
         } else {
           setStatus('error');
           setMessage(data.error || 'Verification failed.');
@@ -40,7 +45,7 @@ function VerifyEmailForm() {
         setStatus('error');
         setMessage('Something went wrong. Please try again.');
       });
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   return (
     <div className="mx-auto mt-20 max-w-md text-center">
@@ -59,11 +64,12 @@ function VerifyEmailForm() {
               </svg>
             </div>
             <h1 className="text-xl font-bold text-gray-900">{message}</h1>
+            <p className="text-sm text-gray-500">Redirecting to dashboard in {countdown}s...</p>
             <button
-              onClick={() => router.push('/login')}
-              className="mt-4 rounded-lg bg-emerald-700 px-6 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+              onClick={() => router.push('/dashboard')}
+              className="mt-2 rounded-lg bg-emerald-700 px-6 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
             >
-              Sign In
+              Go to Dashboard
             </button>
           </div>
         )}

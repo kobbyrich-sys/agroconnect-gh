@@ -1,8 +1,26 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function RegisterSuccessPage() {
+  const [sending, setSending] = useState(false);
+  const [sentMsg, setSentMsg] = useState('');
+
+  const resendVerification = async () => {
+    setSending(true);
+    setSentMsg('');
+    try {
+      const res = await fetch('/api/auth/resend-verification', { method: 'POST' });
+      const data = await res.json();
+      setSentMsg(data.message || 'Verification email sent.');
+    } catch {
+      setSentMsg('Failed to send. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
       <div className="w-full max-w-md text-center">
@@ -15,6 +33,9 @@ export default function RegisterSuccessPage() {
         <p className="mt-2 text-gray-600">
           Welcome to AgroConnect GH. Please check your email to verify your account.
         </p>
+        {sentMsg && (
+          <p className="mt-3 text-sm text-emerald-700">{sentMsg}</p>
+        )}
         <div className="mt-6 space-y-3">
           <Link
             href="/dashboard"
@@ -22,6 +43,13 @@ export default function RegisterSuccessPage() {
           >
             Go to Dashboard
           </Link>
+          <button
+            onClick={resendVerification}
+            disabled={sending}
+            className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {sending ? 'Sending...' : 'Resend verification email'}
+          </button>
           <Link
             href="/marketplace"
             className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"

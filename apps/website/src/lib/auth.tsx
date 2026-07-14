@@ -11,6 +11,8 @@ export interface AuthUser {
   avatar_url?: string;
   phone?: string;
   status?: string;
+  is_email_verified?: boolean;
+  is_phone_verified?: boolean;
 }
 
 interface AuthContextValue {

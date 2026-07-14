@@ -4,6 +4,16 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+const PASSWORD_RULES = [
+  { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  { label: 'An uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
+  { label: 'A lowercase letter', test: (p: string) => /[a-z]/.test(p) },
+  { label: 'A number', test: (p: string) => /[0-9]/.test(p) },
+  { label: 'A special character', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -16,16 +26,29 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const updateField = (field: string, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }));
+
+  const blurField = (field: string) =>
+    setTouched(prev => ({ ...prev, [field]: true }));
+
+  const isValidEmail = EMAIL_REGEX.test(form.email);
+  const showEmailError = touched.email && form.email.length > 0 && !isValidEmail;
+
+  const passwordValid = PASSWORD_RULES.map(r => r.test(form.password));
+  const allPassValid = passwordValid.every(Boolean);
+  const showPassFeedback = touched.password || form.password.length > 0;
+
+  const canSubmit = form.full_name.length > 0 && isValidEmail && allPassValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (form.password.length < 8) {
-      setError('Password must be at least 8 characters');
+    if (!canSubmit) {
+      setError('Please fix the errors above before continuing.');
       return;
     }
 
@@ -45,7 +68,8 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/register/success');
+      // Auto-login happened via cookie; go to dashboard
+      router.push('/dashboard');
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -72,6 +96,7 @@ export default function RegisterPage() {
               type="text"
               value={form.full_name}
               onChange={e => updateField('full_name', e.target.value)}
+              onBlur={() => blurField('full_name')}
               required
               className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               placeholder="John Doe"
@@ -84,10 +109,18 @@ export default function RegisterPage() {
               type="email"
               value={form.email}
               onChange={e => updateField('email', e.target.value)}
+              onBlur={() => blurField('email')}
               required
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className={`mt-1 block w-full rounded-lg border px-4 py-2.5 text-sm outline-none focus:ring-1 ${
+                showEmailError
+                  ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              }`}
               placeholder="you@example.com"
             />
+            {showEmailError && (
+              <p className="mt-1 text-xs text-red-600">Please enter a valid email address</p>
+            )}
           </div>
 
           <div>
@@ -108,10 +141,10 @@ export default function RegisterPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={e => updateField('password', e.target.value)}
+                onBlur={() => blurField('password')}
                 required
-                minLength={8}
                 className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                placeholder="Min. 8 characters"
+                placeholder="Choose a strong password"
               />
               <button
                 type="button"
@@ -130,6 +163,24 @@ export default function RegisterPage() {
                 )}
               </button>
             </div>
+            {showPassFeedback && (
+              <ul className="mt-2 space-y-1">
+                {PASSWORD_RULES.map((rule, i) => {
+                  const ok = passwordValid[i];
+                  return (
+                    <li key={i} className={`flex items-center gap-1.5 text-xs ${ok ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      <svg className={`h-3.5 w-3.5 ${ok ? 'text-emerald-500' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {ok
+                          ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        }
+                      </svg>
+                      {rule.label}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
           <div>
@@ -159,7 +210,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !canSubmit}
             className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-50"
           >
             {loading ? 'Creating account...' : 'Create Account'}
