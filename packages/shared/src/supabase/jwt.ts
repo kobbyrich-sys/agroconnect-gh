@@ -9,6 +9,7 @@ export interface SessionPayload extends JWTPayload {
   role: string;
   user_metadata: Record<string, unknown>;
   app_metadata: Record<string, unknown>;
+  token_valid_since?: number;
 }
 
 export async function createSessionJWT(user: {
@@ -16,16 +17,20 @@ export async function createSessionJWT(user: {
   email: string;
   role: string;
   full_name?: string;
-}, opts?: { expiresIn?: string }): Promise<string> {
+}, opts?: { expiresIn?: string; tokenValidSince?: Date | null }): Promise<string> {
   const expiresIn = opts?.expiresIn || '7d';
-  return new SignJWT({
+  const payload: Record<string, unknown> = {
     sub: user.id,
     email: user.email,
     role: 'authenticated',
     aud: 'authenticated',
     user_metadata: { full_name: user.full_name },
     app_metadata: { provider: 'email', providers: ['email'] },
-  })
+  };
+  if (opts?.tokenValidSince) {
+    payload.token_valid_since = Math.floor(new Date(opts.tokenValidSince).getTime() / 1000);
+  }
+  return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(expiresIn)

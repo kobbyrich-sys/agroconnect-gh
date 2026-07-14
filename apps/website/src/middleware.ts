@@ -23,7 +23,14 @@ export async function middleware(request: NextRequest) {
 
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const payload = token ? await verifySessionJWT(token) : null;
-  const authenticated = !!payload;
+  let authenticated = !!payload;
+
+  // Check server-side session invalidation (token_valid_since) from JWT payload
+  if (authenticated && payload?.token_valid_since && payload.iat) {
+    if (payload.iat < payload.token_valid_since) {
+      authenticated = false;
+    }
+  }
 
   // Allow public and auth routes for everyone
   if (isPublic || isAuthRoute) {

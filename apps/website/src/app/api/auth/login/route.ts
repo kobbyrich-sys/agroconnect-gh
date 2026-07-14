@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       email: user.user_email,
       role: user.user_role,
       full_name: profile?.full_name,
-    }, { expiresIn });
+    }, { expiresIn, tokenValidSince: profile?.token_valid_since });
 
     const response = NextResponse.json({
       success: true,
