@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +31,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: profile } = await supabase
+    const admin = createAdminClient();
+    const { data: profile } = await admin
       .from('profiles')
       .select('id, email, full_name, phone, role, region, avatar_url, status, created_at, updated_at')
       .eq('id', authData.user.id)
