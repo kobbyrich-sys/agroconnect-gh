@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
-  const { data: profile } = await supabase
+  const admin = createAdminClient();
+
+  const { data: profile } = await admin
     .from('profiles')
     .select('role')
-    .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('id', user.id)
     .single();
 
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
@@ -23,7 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Order ID is required' }, { status: 400 });
   }
 
-  const { data: order } = await supabase
+  const { data: order } = await admin
     .from('orders')
     .select('id, escrow_status')
     .eq('id', order_id)
@@ -37,9 +43,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Escrow not available for refund' }, { status: 400 });
   }
 
-  const { data, error } = await supabase.rpc('refund_escrow_to_buyer', {
+  const { data, error } = await admin.rpc('refund_escrow_to_buyer', {
     p_order_id: order_id,
-    p_actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
+    p_actor_id: user.id,
     p_refund_type: reason === 'dispute' ? 'dispute_resolved' : 'cancelled',
   });
 

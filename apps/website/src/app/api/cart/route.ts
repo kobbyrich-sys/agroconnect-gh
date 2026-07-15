@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
-async function getOrCreateCart(supabase: any, userId: string) {
-  let { data: cart } = await supabase
+async function getOrCreateCart(admin: any, userId: string) {
+  let { data: cart } = await admin
     .from('carts')
     .select('id')
     .eq('user_id', userId)
     .maybeSingle();
 
   if (!cart) {
-    const { data, error } = await supabase
+    const { data, error } = await admin
       .from('carts')
       .insert({ user_id: userId })
       .select('id')
@@ -22,12 +23,17 @@ async function getOrCreateCart(supabase: any, userId: string) {
 }
 
 export async function GET(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
-  const cartId = await getOrCreateCart(supabase, '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */);
+  const admin = createAdminClient();
 
-  const { data: items, error } = await supabase
+  const cartId = await getOrCreateCart(admin, user.id);
+
+  const { data: items, error } = await admin
     .from('cart_items')
     .select(`
       id, quantity, wholesale, created_at,
@@ -70,8 +76,13 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
 
   const body = await request.json();
   const { product_id, quantity, wholesale } = body;
@@ -83,7 +94,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: product } = await supabase
+  const { data: product } = await admin
     .from('products')
     .select('id, stock_quantity, status')
     .eq('id', product_id)
@@ -100,9 +111,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const cartId = await getOrCreateCart(supabase, '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */);
+  const cartId = await getOrCreateCart(admin, user.id);
 
-  const { data: existing } = await supabase
+  const { data: existing } = await admin
     .from('cart_items')
     .select('id, quantity')
     .eq('cart_id', cartId)
@@ -117,7 +128,7 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-    const { error } = await supabase
+    const { error } = await admin
       .from('cart_items')
       .update({ quantity: newQty, wholesale: wholesale || false })
       .eq('id', existing.id);
@@ -126,7 +137,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
   } else {
-    const { error } = await supabase
+    const { error } = await admin
       .from('cart_items')
       .insert({ cart_id: cartId, product_id, quantity, wholesale: wholesale || false });
 

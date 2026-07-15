@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabaseAdmin = createAdminClient();
 
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
@@ -11,10 +17,10 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
   const unreadOnly = searchParams.get('unread') === 'true';
 
-  let query = supabase
+  let query = supabaseAdmin
     .from('notifications')
     .select('*', { count: 'exact' })
-    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (unreadOnly) query = query.eq('is_read', false);
@@ -31,13 +37,18 @@ export async function GET(request: Request) {
 }
 
 export async function PUT() {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
-  const { error } = await supabase
+  const supabaseAdmin = createAdminClient();
+
+  const { error } = await supabaseAdmin
     .from('notifications')
     .update({ is_read: true, read_at: new Date().toISOString() })
-    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('user_id', user.id)
     .eq('is_read', false);
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 400 });

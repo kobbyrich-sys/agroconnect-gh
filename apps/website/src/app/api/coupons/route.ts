@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
-  const supabase = createAdminClient();
-  const { data: coupons, error } = await supabase
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabaseAdmin = createAdminClient();
+
+  const { data: coupons, error } = await supabaseAdmin
     .from('coupons')
     .select('*')
     .eq('is_active', true)
@@ -15,8 +23,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabaseAdmin = createAdminClient();
 
   const body = await request.json();
   const { code, discount_type, discount_value, min_order_amount, max_discount, usage_limit, expires_at } = body;
@@ -25,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Code, type, value, and expiry required' }, { status: 400 });
   }
 
-  const { data: coupon, error } = await supabase
+  const { data: coupon, error } = await supabaseAdmin
     .from('coupons')
     .insert({
       code: code.toUpperCase(),
@@ -35,7 +48,7 @@ export async function POST(request: Request) {
       max_discount: max_discount || null,
       usage_limit: usage_limit || 100,
       expires_at,
-      created_by: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
+      created_by: user.id,
     })
     .select()
     .single();
@@ -46,8 +59,13 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabaseAdmin = createAdminClient();
 
   const body = await request.json();
   const { code, subtotal } = body;
@@ -56,7 +74,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: 'Code and subtotal required' }, { status: 400 });
   }
 
-  const { data: coupon } = await supabase
+  const { data: coupon } = await supabaseAdmin
     .from('coupons')
     .select('*')
     .eq('code', code.toUpperCase())

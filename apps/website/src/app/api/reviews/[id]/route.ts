@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@agroconnect/shared';
+import { createClient } from '@/lib/supabase/server';
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  
+
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -22,7 +29,7 @@ export async function PATCH(
     .eq('id', id)
     .single();
 
-  if (!review || review.user_id !== '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */) {
+  if (!review || review.user_id !== user.id) {
     return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   }
 

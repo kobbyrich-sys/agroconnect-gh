@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@agroconnect/shared';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -57,7 +58,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const { data: existing } = await supabase
@@ -69,7 +76,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!existing) {
     return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
   }
-  if (existing.seller_id !== '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */) {
+  if (existing.seller_id !== user.id) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
@@ -100,7 +107,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const { data: existing } = await supabase.from('products').select('seller_id').eq('id', id).single();
@@ -108,8 +121,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
   }
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */).single();
-  if (existing.seller_id !== '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ && !['admin', 'super_admin'].includes(profile?.role || '')) {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  if (existing.seller_id !== user.id && !['admin', 'super_admin'].includes(profile?.role || '')) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 async function holdInEscrow(supabase: any, orderId: string, amount: number, userId: string) {
@@ -12,8 +13,13 @@ async function holdInEscrow(supabase: any, orderId: string, amount: number, user
 }
 
 export async function POST(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const adminSupabase = createAdminClient();
 
   const body = await request.json();
   const { order_id, method, provider } = body;
@@ -22,11 +28,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Order ID and payment method are required' }, { status: 400 });
   }
 
-  const { data: order } = await supabase
+  const { data: order } = await adminSupabase
     .from('orders')
     .select('id, order_number, total, currency, escrow_status')
     .eq('id', order_id)
-    .eq('buyer_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('buyer_id', user.id)
     .single();
 
   if (!order) {
@@ -40,18 +46,18 @@ export async function POST(request: Request) {
   const reference = `AGC-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
   const orderId = order.id;
   const orderTotal = order.total;
-  const buyerId = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */;
+  const buyerId = user.id;
 
   async function processPayment(status: string): Promise<boolean> {
-    const { error: payErr } = await supabase.from('payments').insert({
+    const { error: payErr } = await adminSupabase.from('payments').insert({
       order_id: orderId, buyer_id: buyerId, amount: orderTotal,
       method, provider: provider || method, reference, status,
     });
     if (payErr) throw new Error(payErr.message);
 
     if (status === 'completed') {
-      await holdInEscrow(supabase, orderId, parseFloat(orderTotal), buyerId);
-      await supabase.from('orders').update({
+      await holdInEscrow(adminSupabase, orderId, parseFloat(orderTotal), buyerId);
+      await adminSupabase.from('orders').update({
         status: 'confirmed', payment_status: 'paid', paid_at: new Date().toISOString(),
       }).eq('id', orderId);
     }
@@ -93,8 +99,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: paystackData.message || 'Paystack error' }, { status: 400 });
     }
 
-    await supabase.from('payments').insert({
-      order_id: order.id, buyer_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */, amount: order.total,
+    await adminSupabase.from('payments').insert({
+      order_id: order.id, buyer_id: user.id, amount: order.total,
       method: 'paystack', provider: 'paystack', reference,
       status: 'pending', gateway_response: paystackData,
     });
@@ -110,8 +116,13 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const adminSupabase = createAdminClient();
 
   const body = await request.json();
   const { order_id, reference, status } = body;
@@ -120,7 +131,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: false, error: 'Order ID, reference, and status are required' }, { status: 400 });
   }
 
-  const { data: payment } = await supabase
+  const { data: payment } = await adminSupabase
     .from('payments')
     .select('id, status, amount')
     .eq('reference', reference)
@@ -135,11 +146,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: false, error: 'Payment already processed' }, { status: 400 });
   }
 
-  await supabase.from('payments').update({ status }).eq('id', payment.id);
+  await adminSupabase.from('payments').update({ status }).eq('id', payment.id);
 
   if (status === 'completed') {
-    await holdInEscrow(supabase, order_id, parseFloat(payment.amount), '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */);
-    await supabase.from('orders').update({
+    await holdInEscrow(adminSupabase, order_id, parseFloat(payment.amount), user.id);
+    await adminSupabase.from('orders').update({
       status: 'confirmed', payment_status: 'paid', paid_at: new Date().toISOString(),
     }).eq('id', order_id);
   }

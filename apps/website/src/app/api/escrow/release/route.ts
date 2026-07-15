@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
 
   const body = await request.json();
   const { order_id } = body;
@@ -12,7 +18,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Order ID is required' }, { status: 400 });
   }
 
-  const { data: order } = await supabase
+  const { data: order } = await admin
     .from('orders')
     .select('id, escrow_status, buyer_id, seller_id')
     .eq('id', order_id)
@@ -26,23 +32,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Escrow not held for this order' }, { status: 400 });
   }
 
-  const { data: profile } = await supabase
+  const { data: profile } = await admin
     .from('profiles')
     .select('role')
-    .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('id', user.id)
     .single();
 
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
-  const isBuyer = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.buyer_id;
-  const isSeller = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.seller_id;
+  const isBuyer = user.id === order.buyer_id;
+  const isSeller = user.id === order.seller_id;
 
   if (!isAdmin && !isBuyer) {
     return NextResponse.json({ success: false, error: 'Only buyer or admin can release escrow' }, { status: 403 });
   }
 
-  const { data, error } = await supabase.rpc('release_escrow_to_seller', {
+  const { data, error } = await admin.rpc('release_escrow_to_seller', {
     p_order_id: order_id,
-    p_actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
+    p_actor_id: user.id,
     p_release_type: isBuyer ? 'completed' : 'dispute_resolved',
   });
 

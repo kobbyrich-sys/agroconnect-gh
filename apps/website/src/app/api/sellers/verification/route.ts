@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
   try {
-    
-    const supabase = createAdminClient();
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const { data: business } = await supabase
+    const admin = createAdminClient();
+
+    const { data: business } = await admin
       .from('businesses')
       .select('id')
-      .eq('owner_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+      .eq('owner_id', user.id)
       .single();
 
     if (!business) {
@@ -29,7 +35,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await admin
       .from('seller_verifications')
       .insert({
         business_id: business.id,
@@ -59,20 +65,25 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
-  const { data: business } = await supabase
+  const admin = createAdminClient();
+
+  const { data: business } = await admin
     .from('businesses')
     .select('id')
-    .eq('owner_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('owner_id', user.id)
     .single();
 
   if (!business) {
     return NextResponse.json({ success: false, error: 'No business found' }, { status: 404 });
   }
 
-  const { data: verification, error } = await supabase
+  const { data: verification, error } = await admin
     .from('seller_verifications')
     .select('*')
     .eq('business_id', business.id)

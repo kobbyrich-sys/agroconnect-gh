@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@agroconnect/shared';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
-  
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const { data: tickets, error } = await supabase
     .from('support_tickets')
     .select('*')
-    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 400 });
@@ -17,7 +23,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const { subject, description, category, order_id, priority } = await request.json();
@@ -28,7 +39,7 @@ export async function POST(request: Request) {
   const { data: ticket, error } = await supabase
     .from('support_tickets')
     .insert({
-      user_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */, subject, description, category,
+      user_id: user.id, subject, description, category,
       order_id: order_id || null, priority: priority || 'medium',
     })
     .select()

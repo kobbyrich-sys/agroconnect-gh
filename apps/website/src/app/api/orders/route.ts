@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
 
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
@@ -11,14 +17,14 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
   const status = searchParams.get('status');
 
-  let query = supabase
+  let query = admin
     .from('orders')
     .select(`
       *,
       order_items!left(id, product_name, product_image, unit_price, quantity, total),
       businesses!left(business_name, business_logo)
     `, { count: 'exact' })
-    .eq('buyer_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('buyer_id', user.id)
     .order('created_at', { ascending: false });
 
   if (status) query = query.eq('status', status);
@@ -42,23 +48,28 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  
-  const supabase = createAdminClient();
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
 
   const body = await request.json();
   const { notes } = body;
 
-  const { data: cart, error: cartError } = await supabase
+  const { data: cart, error: cartError } = await admin
     .from('carts')
     .select('id')
-    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+    .eq('user_id', user.id)
     .single();
 
   if (cartError || !cart) {
     return NextResponse.json({ success: false, error: 'Cart is empty' }, { status: 400 });
   }
 
-  const { data: cartItems, error: itemsError } = await supabase
+  const { data: cartItems, error: itemsError } = await admin
     .from('cart_items')
     .select(`
       id, quantity, wholesale,
@@ -115,11 +126,11 @@ export async function POST(request: Request) {
     const total = subtotal;
     const escrowExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await admin
       .from('orders')
       .insert({
         order_number: orderNumber(),
-        buyer_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
+        buyer_id: user.id,
         seller_id: groupData.seller_id,
         business_id: groupData.business_id,
         subtotal,
@@ -153,7 +164,7 @@ export async function POST(request: Request) {
       };
     });
 
-    const { error: itemsInsertError } = await supabase
+    const { error: itemsInsertError } = await admin
       .from('order_items')
       .insert(orderItems);
 
@@ -164,7 +175,7 @@ export async function POST(request: Request) {
     const productIds = groupData.items.map((item: any) => (item.product as any).id);
     for (const item of groupData.items) {
       const p = item.product as any;
-      await supabase.rpc('decrement_stock', {
+      await admin.rpc('decrement_stock', {
         p_product_id: p.id,
         p_quantity: item.quantity,
       });
@@ -173,7 +184,7 @@ export async function POST(request: Request) {
     createdOrders.push(order);
   }
 
-  await supabase.from('cart_items').delete().eq('cart_id', cart.id);
+  await admin.from('cart_items').delete().eq('cart_id', cart.id);
 
   return NextResponse.json({
     success: true,

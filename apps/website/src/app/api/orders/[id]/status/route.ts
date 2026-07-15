@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function PATCH(
@@ -6,8 +7,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  
-  const supabase = createAdminClient();
+
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
 
   const body = await request.json();
   const { action } = body;
@@ -16,7 +23,7 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: 'Action is required' }, { status: 400 });
   }
 
-  const { data: order } = await supabase
+  const { data: order } = await admin
     .from('orders')
     .select('id, status, escrow_status, buyer_id, seller_id')
     .eq('id', id)
@@ -54,8 +61,8 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 });
   }
 
-  const isBuyer = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.buyer_id;
-  const isSeller = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.seller_id;
+  const isBuyer = user.id === order.buyer_id;
+  const isSeller = user.id === order.seller_id;
   const role = isBuyer ? 'buyer' : (isSeller ? 'seller' : null);
 
   if (!role || !actionDef.allowed.includes(role)) {
@@ -66,7 +73,7 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: `Cannot ${action} order in ${order.status} status` }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await admin
     .from('orders')
     .update(actionDef.updates)
     .eq('id', id);
@@ -76,23 +83,23 @@ export async function PATCH(
   }
 
   if (action === 'confirm_completion' && order.escrow_status === 'held') {
-    await supabase.rpc('release_escrow_to_seller', {
+    await admin.rpc('release_escrow_to_seller', {
       p_order_id: id,
-      p_actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
+      p_actor_id: user.id,
       p_release_type: 'completed',
     });
   }
 
   if (action === 'cancel' && order.escrow_status === 'held') {
-    await supabase.rpc('refund_escrow_to_buyer', {
+    await admin.rpc('refund_escrow_to_buyer', {
       p_order_id: id,
-      p_actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
+      p_actor_id: user.id,
       p_refund_type: 'cancelled',
     });
   }
 
-  await supabase.from('audit_logs').insert({
-    actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
+  await admin.from('audit_logs').insert({
+    actor_id: user.id,
     action: `order_${action}`,
     entity_type: 'order',
     entity_id: id,

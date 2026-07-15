@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@agroconnect/shared';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
-  
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const formData = await request.formData();
@@ -34,7 +40,7 @@ export async function POST(request: Request) {
   }
 
   const ext = file.name.split('.').pop();
-  const fileName = `${'00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)

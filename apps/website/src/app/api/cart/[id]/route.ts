@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function PATCH(
@@ -6,8 +7,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  
-  const supabase = createAdminClient();
+
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
 
   const body = await request.json();
   const { quantity } = body;
@@ -19,7 +26,7 @@ export async function PATCH(
     );
   }
 
-  const { data: item } = await supabase
+  const { data: item } = await admin
     .from('cart_items')
     .select('product_id')
     .eq('id', id)
@@ -29,7 +36,7 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: 'Cart item not found' }, { status: 404 });
   }
 
-  const { data: product } = await supabase
+  const { data: product } = await admin
     .from('products')
     .select('stock_quantity')
     .eq('id', item.product_id)
@@ -42,7 +49,7 @@ export async function PATCH(
     );
   }
 
-  const { error } = await supabase
+  const { error } = await admin
     .from('cart_items')
     .update({ quantity })
     .eq('id', id);
@@ -59,10 +66,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  
-  const supabase = createAdminClient();
 
-  const { error } = await supabase
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
+
+  const { error } = await admin
     .from('cart_items')
     .delete()
     .eq('id', id);

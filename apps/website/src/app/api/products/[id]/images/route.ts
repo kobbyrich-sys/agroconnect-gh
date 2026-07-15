@@ -1,13 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@agroconnect/shared';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const { data: product } = await supabase.from('products').select('seller_id').eq('id', id).single();
-  if (!product || product.seller_id !== '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */) {
+  if (!product || product.seller_id !== user.id) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
@@ -24,7 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     const ext = file.name.split('.').pop();
-    const fileName = `${'00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */}/${id}/${Date.now()}-${i}.${ext}`;
+    const fileName = `${user.id}/${id}/${Date.now()}-${i}.${ext}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('product-images')
@@ -59,7 +66,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -81,7 +94,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
+  const authSupabase = await createClient();
+  const { data: { user }, error: authError } = await authSupabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createAdminClient();
 
   const body = await request.json();
