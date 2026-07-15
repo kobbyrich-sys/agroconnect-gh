@@ -1,72 +1,79 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
-  
-  const supabase = createAdminClient();
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
-    .single();
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
 
-  if (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    const admin = createAdminClient();
+    const { data: profile, error } = await admin
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, profile });
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err instanceof Error ? err.message : 'An error occurred' },
+      { status: 500 },
+    );
   }
-
-  return NextResponse.json({ success: true, profile });
 }
 
 export async function PUT(request: Request) {
-  
-  const supabase = createAdminClient();
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  const body = await request.json();
-  const allowedFields = ['full_name', 'phone', 'avatar_url', 'preferred_language'];
-
-  const updates: Record<string, unknown> = {};
-  for (const field of allowedFields) {
-    if (body[field] !== undefined) {
-      updates[field] = body[field];
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
-  }
 
-  // Persist preferences from the settings page into metadata
-  if (body.preferences) {
-    const prefs = body.preferences;
-    const { data: current } = await supabase
+    const body = await request.json();
+    const allowedFields = ['full_name', 'phone', 'avatar_url', 'preferred_language'];
+
+    const updates: Record<string, unknown> = {};
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field];
+      }
+    }
+
+    if (body.preferences) {
+      const prefs = body.preferences;
+      updates.preferred_language = prefs.language || 'en';
+    }
+
+    updates.updated_at = new Date().toISOString();
+
+    const admin = createAdminClient();
+    const { data, error } = await admin
       .from('profiles')
-      .select('metadata')
-      .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
+      .update(updates)
+      .eq('id', user.id)
+      .select()
       .single();
 
-    updates.metadata = {
-      ...(current?.metadata as Record<string, unknown> || {}),
-      preferences: {
-        email_notifications: prefs.email_notifications ?? true,
-        sms_notifications: prefs.sms_notifications ?? true,
-        marketing_emails: prefs.marketing_emails ?? false,
-        language: prefs.language || 'English',
-        currency: prefs.currency || 'GHS',
-      },
-    };
-
-    if (prefs.language) {
-      updates.preferred_language = prefs.language;
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
+
+    return NextResponse.json({ success: true, profile: data });
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err instanceof Error ? err.message : 'An error occurred' },
+      { status: 500 },
+    );
   }
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
-  }
-
-  return NextResponse.json({ success: true, profile: data });
 }
