@@ -1,7 +1,7 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export default async function UsersPage() {
-  const supabase = await createServerClient();
+  const supabase = await createAdminClient();
   const { data: users } = await supabase
     .from('profiles')
     .select(`

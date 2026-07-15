@@ -1,7 +1,7 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export default async function DashboardPage() {
-  const supabase = await createServerClient();
+  const supabase = await createAdminClient();
 
   const [
     { count: userCount },

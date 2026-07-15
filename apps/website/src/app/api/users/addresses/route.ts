@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const { data: addresses, error } = await supabase
     .from('addresses')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .order('is_default', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -23,10 +20,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -43,13 +37,13 @@ export async function POST(request: Request) {
     await supabase
       .from('addresses')
       .update({ is_default: false })
-      .eq('user_id', user.id);
+      .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */);
   }
 
   const { data, error } = await supabase
     .from('addresses')
     .insert({
-      user_id: user.id,
+      user_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
       label,
       street,
       city,

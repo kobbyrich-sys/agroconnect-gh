@@ -1,89 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifySessionJWT } from '@agroconnect/shared/edge';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
-const COOKIE_NAME = 'agroconnect_session';
-
-const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/auth'];
-const buyerRoutes = ['/cart', '/checkout', '/orders'];
-const sellerRoutes = ['/sell', '/dashboard', '/products/manage', '/analytics', '/finance'];
+const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+const protectedPrefixes = ['/dashboard', '/seller', '/admin', '/profile', '/orders', '/cart', '/checkout', '/messages', '/wishlist', '/notifications', '/sell'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const { supabaseResponse, user } = await updateSession(request);
 
-  const isPublic = publicRoutes.some(route =>
-    pathname === route || pathname.startsWith(route + '/'),
-  );
-  const isAdminRoute = pathname.startsWith('/admin');
-  const isBuyerRoute = buyerRoutes.some(route =>
-    pathname === route || pathname.startsWith(route + '/'),
-  );
-  const isSellerRoute = sellerRoutes.some(route =>
-    pathname === route || pathname.startsWith(route + '/'),
-  );
-  const isPortalRoute = pathname.startsWith('/portal');
-  const isProfileRoute = pathname.startsWith('/profile');
-  const isWalletRoute = pathname.startsWith('/wallet');
-  const isMessagesRoute = pathname.startsWith('/messages');
+  const isAuthPage = authRoutes.some((route) => pathname === route || pathname.startsWith(route));
+  const isProtected = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 
-  const token = request.cookies.get(COOKIE_NAME)?.value;
-  const payload = token ? await verifySessionJWT(token) : null;
-  let authenticated = !!payload;
-
-  if (authenticated && payload?.token_valid_since && payload.iat) {
-    if (payload.iat < payload.token_valid_since) {
-      authenticated = false;
-    }
+  if (isAuthPage && user) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Public + auth routes always accessible
-  if (isPublic) {
-    if (authenticated && (pathname === '/login' || pathname === '/register')) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    return NextResponse.next();
+  if (isProtected && !user) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  if (!authenticated) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Admin routes require admin role
-  if (isAdminRoute) {
-    const roles = (payload?.roles as string[]) || [];
-    const profileRole = (payload?.user_metadata?.role as string) || '';
-    const isAdmin = roles.includes('admin') || roles.includes('super_admin') ||
-      profileRole === 'admin' || profileRole === 'super_admin';
-    if (!isAdmin) return NextResponse.redirect(new URL('/', request.url));
-    return NextResponse.next();
-  }
-
-  // Buyer-only routes
-  if (isBuyerRoute) {
-    const roles = (payload?.roles as string[]) || [];
-    if (!roles.includes('buyer')) return NextResponse.redirect(new URL('/', request.url));
-    return NextResponse.next();
-  }
-
-  // Seller-only routes
-  if (isSellerRoute) {
-    const roles = (payload?.roles as string[]) || [];
-    if (!roles.includes('seller')) return NextResponse.redirect(new URL('/', request.url));
-    return NextResponse.next();
-  }
-
-  // Portal routes require authentication
-  if (isPortalRoute) return NextResponse.next();
-
-  // Protected routes (require auth, no role restriction)
-  const protectedRoutes = ['/dashboard', '/profile', '/orders', '/messages', '/wallet'];
-  const isProtected = protectedRoutes.some(route =>
-    pathname === route || pathname.startsWith(route + '/'),
-  );
-  if (isProtected) return NextResponse.next();
-
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|images/).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/auth/callback|images/).*)',
+  ],
 };

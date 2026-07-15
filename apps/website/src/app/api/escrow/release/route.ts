@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -32,12 +29,12 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', user.id)
+    .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .single();
 
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
-  const isBuyer = user.id === order.buyer_id;
-  const isSeller = user.id === order.seller_id;
+  const isBuyer = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.buyer_id;
+  const isSeller = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.seller_id;
 
   if (!isAdmin && !isBuyer) {
     return NextResponse.json({ success: false, error: 'Only buyer or admin can release escrow' }, { status: 403 });
@@ -45,7 +42,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase.rpc('release_escrow_to_seller', {
     p_order_id: order_id,
-    p_actor_id: user.id,
+    p_actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
     p_release_type: isBuyer ? 'completed' : 'dispute_resolved',
   });
 

@@ -1,23 +1,16 @@
 import { NextResponse } from 'next/server';
-import { verifySessionJWT, getSessionToken, invalidateSessions, audit } from '@agroconnect/shared';
-
-const SESSION_COOKIE = 'agroconnect_session';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST() {
   try {
-    const token = await getSessionToken();
-    if (token) {
-      const payload = await verifySessionJWT(token);
-      if (payload?.sub) {
-        await invalidateSessions(payload.sub);
-        audit('logout', { userId: payload.sub });
-      }
-    }
-  } catch {
-    // Proceed with cookie cleanup even if server-side invalidation fails
-  }
+    const supabase = await createClient();
+    await supabase.auth.signOut();
 
-  const response = NextResponse.json({ success: true, message: 'Signed out' });
-  response.cookies.delete(SESSION_COOKIE);
-  return response;
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err instanceof Error ? err.message : 'An error occurred' },
+      { status: 500 },
+    );
+  }
 }

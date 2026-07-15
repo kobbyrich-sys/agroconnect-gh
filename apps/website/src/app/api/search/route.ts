@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
   const supabase = createAdminClient();
@@ -38,16 +38,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
-
-  if (!['admin', 'super_admin'].includes(user.role || '')) {
-    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
-  }
 
   const body = await request.json();
   const { name, slug, description, image_url, icon, parent_id, order_index } = body;

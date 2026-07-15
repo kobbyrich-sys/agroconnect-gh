@@ -1,7 +1,7 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 async function getEscrowData() {
-  const supabase = await createServerClient();
+  const supabase = await createAdminClient();
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
   try {

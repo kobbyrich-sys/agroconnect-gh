@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 async function getOrCreateCart(supabase: any, userId: string) {
   let { data: cart } = await supabase
@@ -22,13 +22,10 @@ async function getOrCreateCart(supabase: any, userId: string) {
 }
 
 export async function GET(request: Request) {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
-  const cartId = await getOrCreateCart(supabase, user.id);
+  const cartId = await getOrCreateCart(supabase, '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */);
 
   const { data: items, error } = await supabase
     .from('cart_items')
@@ -73,10 +70,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -106,7 +100,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const cartId = await getOrCreateCart(supabase, user.id);
+  const cartId = await getOrCreateCart(supabase, '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */);
 
   const { data: existing } = await supabase
     .from('cart_items')

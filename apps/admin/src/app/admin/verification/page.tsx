@@ -1,7 +1,7 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export default async function VerificationPage() {
-  const supabase = await createServerClient();
+  const supabase = await createAdminClient();
   const { data: pending } = await supabase
     .from('businesses')
     .select('id, business_name, business_type, business_phone, business_address, gps_address, registration_number, description, created_at, profiles!owner_id(full_name, email)')

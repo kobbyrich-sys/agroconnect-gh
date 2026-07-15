@@ -1,7 +1,7 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export default async function ProductsPage() {
-  const supabase = await createServerClient();
+  const supabase = await createAdminClient();
   const { data: products } = await supabase
     .from('products')
     .select('id, name, retail_price, stock_quantity, status, is_published, created_at, categories(name), profiles!seller_id(full_name)')

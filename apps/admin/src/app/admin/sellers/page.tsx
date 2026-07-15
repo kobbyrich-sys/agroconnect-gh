@@ -1,7 +1,7 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export default async function SellersPage() {
-  const supabase = await createServerClient();
+  const supabase = await createAdminClient();
   const { data: sellers } = await supabase
     .from('businesses')
     .select('id, business_name, business_type, is_verified, status, created_at, profiles!owner_id(full_name, email)')

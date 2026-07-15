@@ -1,60 +1,36 @@
 import { NextResponse } from 'next/server';
-import { verifySessionJWT, getSessionToken, getProfileById, getTokenValidity, getUserRoles, createCsrfToken } from '@agroconnect/shared';
-
-const CSRF_COOKIE = 'agroconnect_csrf';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
-    const token = await getSessionToken();
+    const supabase = await createClient();
 
-    if (!token) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      return NextResponse.json({ success: true, user: null, profile: null });
     }
 
-    const payload = await verifySessionJWT(token);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, phone, role, region, avatar_url, status, created_at, updated_at')
+      .eq('id', session.user.id)
+      .single();
 
-    if (!payload || !payload.sub || !payload.iat) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
-    }
-
-    const tokenValidSince = await getTokenValidity(payload.sub);
-
-    if (tokenValidSince) {
-      const validSinceEpoch = Math.floor(new Date(tokenValidSince).getTime() / 1000);
-      if (payload.iat < validSinceEpoch) {
-        return NextResponse.json({ authenticated: false }, { status: 401 });
-      }
-    }
-
-    const profile = await getProfileById(payload.sub);
-    const roles = payload.roles?.length ? payload.roles : (profile ? await getUserRoles(payload.sub) : ['buyer']);
-    const active_role = payload.active_role || roles[0] || 'buyer';
-
-    const response = NextResponse.json({
-      authenticated: true,
+    return NextResponse.json({
+      success: true,
       user: {
-        id: payload.sub,
-        email: payload.email,
-        full_name: payload.user_metadata?.full_name || profile?.full_name,
-        phone: profile?.phone,
-        avatar_url: profile?.avatar_url,
-        role: profile?.role || payload.role,
-        roles,
-        active_role,
-        status: profile?.status || 'active',
-        is_email_verified: profile?.is_email_verified || false,
-        is_phone_verified: profile?.is_phone_verified || false,
-        created_at: profile?.created_at,
+        id: session.user.id,
+        email: session.user.email,
       },
+      profile,
     });
-
-    const csrfToken = await createCsrfToken();
-    response.cookies.set(CSRF_COOKIE, csrfToken, {
-      httpOnly: false, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 3600,
-    });
-
-    return response;
-  } catch {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err instanceof Error ? err.message : 'An error occurred' },
+      { status: 500 },
+    );
   }
 }

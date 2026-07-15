@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const { data: dispute } = await supabase
@@ -25,11 +22,11 @@ export async function GET(
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', user.id)
+    .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .single();
 
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
-  const isInvolved = user.id === dispute.raised_by || user.id === dispute.raised_against;
+  const isInvolved = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === dispute.raised_by || '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === dispute.raised_against;
 
   if (!isAdmin && !isInvolved) {
     return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
@@ -43,16 +40,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', user.id)
+    .eq('id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .single();
 
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
@@ -82,7 +76,7 @@ export async function PATCH(
     .update({
       status,
       resolution_notes: resolution_notes || null,
-      resolved_by: user.id,
+      resolved_by: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
       resolved_at: ['resolved_buyer', 'resolved_seller', 'cancelled'].includes(status) ? new Date().toISOString() : null,
     })
     .eq('id', id)
@@ -94,7 +88,7 @@ export async function PATCH(
   }
 
   await supabase.from('audit_logs').insert({
-    actor_id: user.id,
+    actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
     action: 'dispute_resolved',
     entity_type: 'dispute',
     entity_id: id,

@@ -1,4 +1,4 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700',
@@ -16,7 +16,7 @@ const PAYMENT_STYLES: Record<string, string> = {
 };
 
 export default async function OrdersPage() {
-  const supabase = await createServerClient();
+  const supabase = await createAdminClient();
   const { data: orders } = await supabase
     .from('orders')
     .select('order_number, total, status, payment_status, created_at, profiles!buyer_id(full_name), businesses(business_name)')

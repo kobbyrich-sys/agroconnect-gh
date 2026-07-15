@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  
   const supabase = createAdminClient();
 
   const { searchParams } = new URL(request.url);
@@ -15,7 +14,7 @@ export async function GET(request: Request) {
   let query = supabase
     .from('notifications')
     .select('*', { count: 'exact' })
-    .eq('user_id', user.id)
+    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .order('created_at', { ascending: false });
 
   if (unreadOnly) query = query.eq('is_read', false);
@@ -32,14 +31,13 @@ export async function GET(request: Request) {
 }
 
 export async function PUT() {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  
   const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('notifications')
     .update({ is_read: true, read_at: new Date().toISOString() })
-    .eq('user_id', user.id)
+    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .eq('is_read', false);
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 400 });

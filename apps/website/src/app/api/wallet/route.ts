@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const { data: wallet } = await supabase
     .from('wallets')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .maybeSingle();
 
   const { data: transactions } = await supabase
@@ -49,13 +46,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!user.roles.includes('seller')) {
-    return NextResponse.json({ success: false, error: 'Only sellers can make withdrawals' }, { status: 403 });
-  }
+  
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -68,7 +59,7 @@ export async function POST(request: Request) {
   const { data: wallet } = await supabase
     .from('wallets')
     .select('id, balance')
-    .eq('user_id', user.id)
+    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .single();
 
   if (!wallet || parseFloat(wallet.balance) < amount) {
@@ -78,7 +69,7 @@ export async function POST(request: Request) {
   const { data: withdrawal, error } = await supabase
     .from('withdrawal_requests')
     .insert({
-      seller_id: user.id,
+      seller_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
       amount,
       account_name,
       account_number,

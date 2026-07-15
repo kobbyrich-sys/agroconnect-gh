@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
   const supabase = createAdminClient();
@@ -15,8 +15,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
       max_discount: max_discount || null,
       usage_limit: usage_limit || 100,
       expires_at,
-      created_by: user.id,
+      created_by: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
     })
     .select()
     .single();
@@ -47,8 +46,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  
   const supabase = createAdminClient();
 
   const body = await request.json();

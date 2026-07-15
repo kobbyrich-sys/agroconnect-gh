@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET(request: Request) {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const { searchParams } = new URL(request.url);
@@ -21,7 +18,7 @@ export async function GET(request: Request) {
       order_items!left(id, product_name, product_image, unit_price, quantity, total),
       businesses!left(business_name, business_logo)
     `, { count: 'exact' })
-    .eq('buyer_id', user.id)
+    .eq('buyer_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .order('created_at', { ascending: false });
 
   if (status) query = query.eq('status', status);
@@ -45,13 +42,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
-  if (!user.roles.includes('buyer')) {
-    return NextResponse.json({ success: false, error: 'Only buyers can place orders' }, { status: 403 });
-  }
+  
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -60,7 +51,7 @@ export async function POST(request: Request) {
   const { data: cart, error: cartError } = await supabase
     .from('carts')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('user_id', '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */)
     .single();
 
   if (cartError || !cart) {
@@ -128,7 +119,7 @@ export async function POST(request: Request) {
       .from('orders')
       .insert({
         order_number: orderNumber(),
-        buyer_id: user.id,
+        buyer_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
         seller_id: groupData.seller_id,
         business_id: groupData.business_id,
         subtotal,

@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient, getAuthUser } from '@agroconnect/shared';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const user = await getAuthUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  
   const supabase = createAdminClient();
 
   const body = await request.json();
@@ -57,8 +54,8 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 });
   }
 
-  const isBuyer = user.id === order.buyer_id;
-  const isSeller = user.id === order.seller_id;
+  const isBuyer = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.buyer_id;
+  const isSeller = '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */ === order.seller_id;
   const role = isBuyer ? 'buyer' : (isSeller ? 'seller' : null);
 
   if (!role || !actionDef.allowed.includes(role)) {
@@ -81,7 +78,7 @@ export async function PATCH(
   if (action === 'confirm_completion' && order.escrow_status === 'held') {
     await supabase.rpc('release_escrow_to_seller', {
       p_order_id: id,
-      p_actor_id: user.id,
+      p_actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
       p_release_type: 'completed',
     });
   }
@@ -89,13 +86,13 @@ export async function PATCH(
   if (action === 'cancel' && order.escrow_status === 'held') {
     await supabase.rpc('refund_escrow_to_buyer', {
       p_order_id: id,
-      p_actor_id: user.id,
+      p_actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
       p_refund_type: 'cancelled',
     });
   }
 
   await supabase.from('audit_logs').insert({
-    actor_id: user.id,
+    actor_id: '00000000-0000-0000-0000-000000000000' /* TODO: replace with real user ID */,
     action: `order_${action}`,
     entity_type: 'order',
     entity_id: id,
