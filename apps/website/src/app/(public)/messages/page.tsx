@@ -1,12 +1,12 @@
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function MessagesPage() {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect('/login');
 
+  const supabase = createAdminClient();
   const { data: chats } = await supabase
     .from('chats')
     .select(`

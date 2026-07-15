@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const { data: product } = await supabase.from('products').select('seller_id').eq('id', id).single();
   if (!product || product.seller_id !== user.id) {
@@ -63,10 +62,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const supabase = createAdminClient();
 
   const body = await request.json();
   const { image_id, is_primary, order_index } = body;
@@ -87,10 +85,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const supabase = createAdminClient();
 
   const body = await request.json();
   const { image_id } = body;

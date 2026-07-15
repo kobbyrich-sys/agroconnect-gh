@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const user = await getAuthUser();
     if (!user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = createAdminClient();
 
     const body = await request.json();
     const { business_name, business_type, business_phone, business_email, business_address, gps_address, description } = body;
@@ -62,7 +59,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 
-    await supabase.from('profiles').update({ role: business_type }).eq('id', user.id);
+    await supabase.from('user_roles').insert({
+      user_id: user.id,
+      role: 'seller',
+    }).maybeSingle();
+
+    const { data: sellerProfile } = await supabase.from('seller_profiles').insert({
+      user_id: user.id,
+      business_name,
+      business_phone,
+      business_email: business_email || null,
+      business_address,
+      gps_address: gps_address || null,
+      description: description || null,
+      status: 'pending',
+    }).select('id').single();
+
+    if (sellerProfile && business_type && ['farmer', 'manufacturer', 'wholesaler'].includes(business_type)) {
+      await supabase.from('seller_business_types').insert({
+        seller_id: sellerProfile.id,
+        business_type,
+      }).maybeSingle();
+    }
 
     return NextResponse.json(
       { success: true, message: 'Business registered successfully. Awaiting admin approval.', business },

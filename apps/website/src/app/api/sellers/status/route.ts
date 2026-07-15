@@ -1,23 +1,22 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function GET() {
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
-  const { data: profile } = await supabase
-    .from('profiles')
+  const { data: userRole } = await supabase
+    .from('user_roles')
     .select('role')
-    .eq('id', user.id)
-    .single();
+    .eq('user_id', user.id)
+    .eq('role', 'seller')
+    .eq('is_active', true)
+    .maybeSingle();
 
-  const isSeller = profile?.role && ['farmer', 'manufacturer', 'wholesaler'].includes(profile.role);
+  const isSeller = !!userRole;
 
   const { data: business } = await supabase
     .from('businesses')

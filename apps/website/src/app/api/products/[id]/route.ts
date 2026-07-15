@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createServerClient();
+  const supabase = createAdminClient();
 
   const { data: product, error } = await supabase
     .from('products')
@@ -57,12 +57,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const { data: existing } = await supabase
     .from('products')
@@ -73,7 +72,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!existing) {
     return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
   }
-  if (existing.seller_id !== user.id && !['admin', 'super_admin'].includes((await supabase.from('profiles').select('role').eq('id', user.id).single()).data?.role || '')) {
+  if (existing.seller_id !== user.id && !['admin', 'super_admin'].includes(user.role)) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
@@ -104,12 +103,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const { data: existing } = await supabase.from('products').select('seller_id').eq('id', id).single();
   if (!existing) {

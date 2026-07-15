@@ -11,7 +11,3 @@ export function createBrowserClient() {
   }
   return browserClient;
 }
-
-export function getBrowserClient() {
-  return createBrowserClient();
-}

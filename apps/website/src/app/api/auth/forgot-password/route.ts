@@ -1,51 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail } from '@agroconnect/shared';
+import { getUserByEmail, RateLimiter, audit } from '@agroconnect/shared';
 import { SignJWT } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
+const RESET_SECRET = new TextEncoder().encode(
+  (process.env.RESET_PASSWORD_SECRET || process.env.SUPABASE_JWT_SECRET)! + ':reset'
+);
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY!;
 
-// In-memory rate limiter (per email). For production, replace with Vercel KV.
-const requests = new Map<string, number>();
-const RESEND_WINDOW_MS = 5 * 60 * 1000;
-
-function isRateLimited(email: string): boolean {
-  const now = Date.now();
-  const last = requests.get(email);
-  if (last && now - last < RESEND_WINDOW_MS) {
-    return true;
-  }
-  requests.set(email, now);
-  return false;
-}
+const forgotPwLimiter = new RateLimiter(1, 5 * 60 * 1000);
 
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email is required' },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 });
     }
 
-    // Rate limit to prevent inbox flooding (1 request per 5 min per email)
-    if (isRateLimited(email.toLowerCase().trim())) {
+    const { allowed } = forgotPwLimiter.check(email);
+    if (!allowed) {
       return NextResponse.json({
-        success: true,
-        message: 'If an account exists, a password reset link has been sent.',
+        success: true, message: 'If an account exists, a password reset link has been sent.',
       });
     }
 
+    forgotPwLimiter.increment(email);
+
     const user = await getUserByEmail(email);
 
-    // Don't reveal if the account exists
     if (!user) {
       return NextResponse.json({
-        success: true,
-        message: 'If an account exists, a password reset link has been sent.',
+        success: true, message: 'If an account exists, a password reset link has been sent.',
       });
     }
 
@@ -53,7 +39,7 @@ export async function POST(request: NextRequest) {
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('1h')
-      .sign(JWT_SECRET);
+      .sign(RESET_SECRET);
 
     const resetUrl = `${APP_URL}/auth/reset-password?token=${token}`;
 
@@ -77,14 +63,11 @@ export async function POST(request: NextRequest) {
       }),
     });
 
+    audit('forgot-password.sent', { email, userId: user.user_id });
     return NextResponse.json({
-      success: true,
-      message: 'If an account exists, a password reset link has been sent.',
+      success: true, message: 'If an account exists, a password reset link has been sent.',
     });
   } catch {
-    return NextResponse.json(
-      { success: false, error: 'Something went wrong. Please try again.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: 'Something went wrong. Please try again.' }, { status: 500 });
   }
 }

@@ -18,6 +18,8 @@ export interface UserProfile {
   full_name?: string;
   avatar_url?: string;
   role: string;
+  roles: string[];
+  active_role: string;
   status: string;
   is_email_verified: boolean;
   is_phone_verified: boolean;
@@ -29,7 +31,6 @@ export interface RegisterInput {
   password: string;
   full_name: string;
   phone?: string;
-  role?: string;
 }
 
 export interface LoginInput {

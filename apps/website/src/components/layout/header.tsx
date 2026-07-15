@@ -4,8 +4,23 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { useAuth } from '@/lib/auth';
+import { RoleSwitcher } from '@/components/layout/role-switcher';
 
-const navLinks = [
+const buyerNavLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/marketplace', label: 'Marketplace' },
+  { href: '/cart', label: 'Cart' },
+  { href: '/categories', label: 'Categories' },
+];
+
+const sellerNavLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/products/manage', label: 'Products' },
+  { href: '/orders', label: 'Orders' },
+];
+
+const guestNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/marketplace', label: 'Marketplace' },
   { href: '/categories', label: 'Categories' },
@@ -15,7 +30,13 @@ const navLinks = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, activeRole, roles } = useAuth();
+
+  const navLinks = !loading && user
+    ? activeRole === 'seller'
+      ? sellerNavLinks
+      : buyerNavLinks
+    : guestNavLinks;
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-xs">
@@ -42,14 +63,9 @@ export function Header() {
         <div className="hidden items-center gap-2 md:flex">
           {!loading && user ? (
             <>
+              <RoleSwitcher />
               <Link
-                href="/dashboard"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/orders"
+                href={activeRole === 'seller' ? '/orders' : '/orders'}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
               >
                 Orders
@@ -120,19 +136,13 @@ export function Header() {
                 <div className="px-4 py-2 text-sm font-medium text-gray-900">
                   Signed in as {user.full_name || user.email}
                 </div>
+                <RoleSwitcher />
                 <Link
-                  href="/dashboard"
+                  href="/profile"
                   className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
                   onClick={() => setOpen(false)}
                 >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/orders"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
-                  onClick={() => setOpen(false)}
-                >
-                  Orders
+                  Profile
                 </Link>
                 <button
                   onClick={() => { signOut(); setOpen(false); }}

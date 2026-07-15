@@ -17,10 +17,10 @@ export default function RegisterSuccessPage() {
         </p>
         <div className="mt-6 space-y-3">
           <Link
-            href="/dashboard"
+            href="/marketplace"
             className="block w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800"
           >
-            Go to Dashboard
+            Browse Marketplace
           </Link>
           <Link
             href="/marketplace"

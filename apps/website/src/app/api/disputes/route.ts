@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function GET() {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -35,11 +35,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const body = await request.json();
   const { order_id, reason, description } = body;

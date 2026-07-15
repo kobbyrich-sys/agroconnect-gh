@@ -31,7 +31,7 @@ export default function LoginPage() {
       }
 
       const params = new URLSearchParams(window.location.search);
-      const redirect = params.get('redirect') || '/dashboard';
+      const redirect = params.get('redirect') || '/marketplace';
       window.location.href = redirect;
     } catch {
       setError('Network error. Please try again.');

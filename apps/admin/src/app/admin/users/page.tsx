@@ -4,17 +4,25 @@ export default async function UsersPage() {
   const supabase = await createServerClient();
   const { data: users } = await supabase
     .from('profiles')
-    .select('id, full_name, email, phone, role, status, is_email_verified, created_at')
+    .select(`
+      id, full_name, email, phone, role, status, is_email_verified, created_at,
+      user_roles!left(role)
+    `)
     .order('created_at', { ascending: false })
     .limit(50);
 
   const roleColors: Record<string, string> = {
     buyer: 'bg-blue-50 text-blue-700',
-    farmer: 'bg-emerald-50 text-emerald-700',
-    manufacturer: 'bg-amber-50 text-amber-700',
-    wholesaler: 'bg-purple-50 text-purple-700',
+    seller: 'bg-emerald-50 text-emerald-700',
     admin: 'bg-red-50 text-red-700',
   };
+
+  function getRoles(user: any): string[] {
+    const profileRole = user.role || 'buyer';
+    const platformRoles = (user.user_roles || []).map((r: any) => r.role);
+    const all = new Set([...platformRoles, profileRole]);
+    return Array.from(all).filter(Boolean);
+  }
 
   return (
     <div>
@@ -48,9 +56,13 @@ export default async function UsersPage() {
                   </div>
                 </td>
                 <td className="px-5 py-4">
-                  <span className={`rounded-full px-2 py-1 text-xs font-medium capitalize ${roleColors[u.role] || 'bg-gray-50 text-gray-600'}`}>
-                    {u.role || 'buyer'}
-                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {getRoles(u).map(role => (
+                      <span key={role} className={`rounded-full px-2 py-1 text-xs font-medium capitalize ${roleColors[role] || 'bg-gray-50 text-gray-600'}`}>
+                        {role}
+                      </span>
+                    ))}
+                  </div>
                 </td>
                 <td className="px-5 py-4">
                   <span className={`rounded-full px-2 py-1 text-xs font-medium capitalize ${

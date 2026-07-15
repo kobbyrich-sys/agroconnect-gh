@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/lib/auth';
 
 interface Profile {
   id: string;
@@ -18,6 +19,7 @@ interface Profile {
 }
 
 export default function ProfilePage() {
+  const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [business, setBusiness] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -95,8 +97,13 @@ export default function ProfilePage() {
               <h2 className="mt-4 text-lg font-semibold text-gray-900">{profile?.full_name}</h2>
               <p className="text-sm text-gray-500">{profile?.email}</p>
               <span className="mt-3 inline-block rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium capitalize text-emerald-700">
-                {profile?.role}
+                {user?.active_role || profile?.role}
               </span>
+              {user?.roles && user.roles.length > 1 && (
+                <span className="mt-1 inline-block rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                  All: {user.roles.join(', ')}
+                </span>
+              )}
             </div>
 
             <nav className="mt-4 rounded-xl border border-gray-200 bg-white p-2 space-y-1">

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifySessionJWT, getSessionToken, invalidateSessions } from '@agroconnect/shared';
+import { verifySessionJWT, getSessionToken, invalidateSessions, audit } from '@agroconnect/shared';
 
 const SESSION_COOKIE = 'agroconnect_session';
 
@@ -10,6 +10,7 @@ export async function POST() {
       const payload = await verifySessionJWT(token);
       if (payload?.sub) {
         await invalidateSessions(payload.sub);
+        audit('logout', { userId: payload.sub });
       }
     }
   } catch {

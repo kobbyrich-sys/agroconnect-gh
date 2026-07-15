@@ -27,7 +27,11 @@ export interface SortParams {
   order: SortOrder;
 }
 
-export type UserRole = 'guest' | 'buyer' | 'farmer' | 'manufacturer' | 'wholesaler' | 'support' | 'admin' | 'super_admin';
+export type UserRole = 'guest' | 'buyer' | 'seller' | 'support' | 'admin' | 'super_admin';
+
+export type PlatformRole = 'buyer' | 'seller';
+
+export type SellerBusinessType = 'farmer' | 'manufacturer' | 'wholesaler' | 'food_processor' | 'cooperative' | 'agro_dealer' | 'input_supplier' | 'exporter';
 
 export type BusinessType = 'farmer' | 'manufacturer' | 'wholesaler';
 

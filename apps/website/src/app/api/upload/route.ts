@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const formData = await request.formData();
   const file = formData.get('file') as File;

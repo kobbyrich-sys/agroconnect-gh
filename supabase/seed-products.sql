@@ -37,6 +37,10 @@ INSERT INTO auth.users (
 UPDATE profiles SET role = 'farmer', phone = '+233 20 123 4567', full_name = 'Kofi Mensah'
 WHERE id = 'a0000000-0000-0000-0000-000000000001';
 
+-- 3b. Grant seller platform role
+INSERT INTO user_roles (user_id, role) VALUES ('a0000000-0000-0000-0000-000000000001', 'seller')
+ON CONFLICT (user_id, role) DO NOTHING;
+
 -- 4. Update buyer profile
 UPDATE profiles SET phone = '+233 24 987 6543', full_name = 'Ama Serwaa'
 WHERE id = 'a0000000-0000-0000-0000-000000000002';

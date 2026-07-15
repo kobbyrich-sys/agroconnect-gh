@@ -66,8 +66,10 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto-login happened via cookie; go to dashboard
-      window.location.href = '/dashboard';
+      // Auto-login happened via cookie; go to marketplace or previous page
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect') || '/marketplace';
+      window.location.href = redirect;
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -133,6 +135,38 @@ export default function RegisterPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700">I am a...</label>
+            <div className="mt-1 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => updateField('role', 'buyer')}
+                className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all ${
+                  form.role === 'buyer'
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <span className="block text-lg">🛒</span>
+                Buyer
+                <span className="mt-0.5 block text-xs font-normal text-gray-400">Shop for products</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => updateField('role', 'farmer')}
+                className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all ${
+                  form.role === 'farmer'
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <span className="block text-lg">🌾</span>
+                Farmer / Seller
+                <span className="mt-0.5 block text-xs font-normal text-gray-400">Sell your products</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <div className="relative mt-1">
               <input
@@ -181,30 +215,11 @@ export default function RegisterPage() {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">I am a</label>
-            <div className="mt-1 grid grid-cols-2 gap-3">
-              {[
-                { value: 'buyer', label: 'Buyer' },
-                { value: 'farmer', label: 'Farmer' },
-                { value: 'manufacturer', label: 'Manufacturer' },
-                { value: 'wholesaler', label: 'Wholesaler' },
-              ].map(option => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => updateField('role', option.value)}
-                  className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
-                    form.role === option.value
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+          {form.role === 'farmer' && (
+            <div className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              You'll get a <strong>seller dashboard</strong> to list products and manage orders.
             </div>
-          </div>
+          )}
 
           <button
             type="submit"

@@ -1,6 +1,11 @@
-export { createBrowserClient } from './client';
+export { createBrowserClient, createBrowserClient as getBrowserClient } from './client';
 export { createServerClient, createAdminClient } from './server';
 export { createSessionJWT, verifySessionJWT } from './jwt';
 export { setSessionCookies, clearSessionCookies, getSessionToken } from './session';
-export { registerUser, verifyPassword, updatePassword, getUserByEmail, getProfileById, setEmailVerified, invalidateSessions, getTokenValidity, getPasswordResetAt, recordPasswordReset } from './db';
+export { registerUser, verifyPassword, updatePassword, getUserByEmail, getProfileById, setEmailVerified, invalidateSessions, getTokenValidity, getPasswordResetAt, recordPasswordReset, getUserRoles, hasUserRole, grantUserRole } from './db';
+export { getAuthUser } from './auth';
+export type { AuthUser } from './auth';
+export { createCsrfToken, verifyCsrfToken } from './csrf';
+export { RateLimiter } from './ratelimit';
+export { audit } from './audit';
 export type { AuthResponse, SessionData, UserProfile, RegisterInput, LoginInput } from './types';

@@ -22,13 +22,12 @@ export async function registerUser(
   password: string,
   fullName: string,
   phone?: string,
-  role?: string,
 ): Promise<{ id: string }> {
   const result = await getPool().query(
     `SELECT public.register_user(
       $1::text, $2::text, $3::text, $4::text, $5::text
     ) as id`,
-    [email, password, fullName, phone || null, role || 'buyer'],
+    [email, password, fullName, phone || null, 'buyer'],
   );
   return { id: result.rows[0].id };
 }
@@ -41,12 +40,18 @@ export async function verifyPassword(
   user_email: string;
   user_role: string;
   user_status: string;
+  user_roles: string[];
 } | null> {
   const result = await getPool().query(
     `SELECT * FROM public.verify_password($1::text, $2::text)`,
     [email, password],
   );
-  return result.rows[0] || null;
+  const row = result.rows[0];
+  if (!row) return null;
+  return {
+    ...row,
+    user_roles: row.user_roles || [],
+  };
 }
 
 export async function updatePassword(
@@ -86,13 +91,13 @@ export async function getProfileById(userId: string) {
 
 export async function setEmailVerified(userId: string) {
   await getPool().query(
-    `UPDATE public.profiles SET is_email_verified = true, email_verified_at = now() WHERE id = $1`,
+    `UPDATE public.profiles SET is_email_verified = true WHERE id = $1`,
     [userId],
-  );
+  ).catch(() => {});
   await getPool().query(
     `UPDATE auth.users SET email_confirmed_at = now() WHERE id = $1`,
     [userId],
-  );
+  ).catch(() => {});
 }
 
 export async function invalidateSessions(userId: string) {
@@ -138,6 +143,42 @@ export async function recordPasswordReset(userId: string) {
     );
   } catch {
     // Column may not exist yet; password update still succeeds
+  }
+}
+
+export async function getUserRoles(userId: string): Promise<string[]> {
+  try {
+    const result = await getPool().query(
+      `SELECT public.get_user_roles($1::uuid) as roles`,
+      [userId],
+    );
+    return result.rows[0]?.roles || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function hasUserRole(userId: string, role: string): Promise<boolean> {
+  try {
+    const result = await getPool().query(
+      `SELECT public.has_role($1::uuid, $2::text) as has_it`,
+      [userId, role],
+    );
+    return result.rows[0]?.has_it === true;
+  } catch {
+    return false;
+  }
+}
+
+export async function grantUserRole(userId: string, role: string): Promise<boolean> {
+  try {
+    const result = await getPool().query(
+      `SELECT public.grant_user_role($1::uuid, $2::platform_role) as ok`,
+      [userId, role],
+    );
+    return result.rows[0]?.ok === true;
+  } catch {
+    return false;
   }
 }
 

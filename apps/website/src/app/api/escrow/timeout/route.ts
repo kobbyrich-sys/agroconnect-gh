@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function POST() {
-  const supabase = await createServerClient();
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  const supabase = createAdminClient();
 
   const { data: configs } = await supabase
     .from('escrow_timeout_config')

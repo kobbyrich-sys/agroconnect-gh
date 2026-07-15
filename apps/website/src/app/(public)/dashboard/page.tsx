@@ -25,12 +25,23 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const quickLinks = [
+  const isSeller = user.active_role === 'seller' || user.roles?.includes('seller');
+
+  const buyerLinks = [
     { href: '/marketplace', label: 'Browse Marketplace', desc: 'Explore products from farmers and vendors' },
-    { href: '/sell', label: 'Sell Products', desc: 'List your agricultural products for sale' },
-    { href: '/orders', label: 'My Orders', desc: 'Track your purchases and sales' },
+    { href: '/cart', label: 'Shopping Cart', desc: 'View items in your cart' },
+    { href: '/orders', label: 'My Orders', desc: 'Track your purchases' },
     { href: '/profile', label: 'Profile Settings', desc: 'Manage your account and preferences' },
   ];
+
+  const sellerLinks = [
+    { href: '/sell', label: 'Sell Products', desc: 'List your agricultural products for sale' },
+    { href: '/dashboard', label: 'Sales Dashboard', desc: 'View your sales and earnings' },
+    { href: '/orders', label: 'Order Management', desc: 'Manage incoming orders' },
+    { href: '/profile', label: 'Profile Settings', desc: 'Manage your account and preferences' },
+  ];
+
+  const quickLinks = isSeller ? sellerLinks : buyerLinks;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -39,7 +50,7 @@ export default function DashboardPage() {
           Welcome back{user.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
         </h1>
         <p className="mt-2 text-gray-600">
-          Here is an overview of your AgroConnect account.
+          {isSeller ? 'Manage your sales and products.' : 'Browse and shop from the marketplace.'}
         </p>
       </div>
 
@@ -67,8 +78,14 @@ export default function DashboardPage() {
           </div>
           <div className="flex justify-between">
             <dt className="text-gray-500">Role</dt>
-            <dd className="font-medium text-gray-900 capitalize">{user.role}</dd>
+            <dd className="font-medium text-gray-900 capitalize">{user.active_role || user.roles?.[0] || user.role}</dd>
           </div>
+          {user.roles && user.roles.length > 1 && (
+            <div className="flex justify-between">
+              <dt className="text-gray-500">All Roles</dt>
+              <dd className="font-medium text-gray-900 capitalize">{user.roles.join(', ')}</dd>
+            </div>
+          )}
           <div className="flex justify-between">
             <dt className="text-gray-500">Status</dt>
             <dd className="font-medium text-green-600 capitalize">{user.status || 'active'}</dd>

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function GET() {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const supabase = createAdminClient();
 
   const { data: items, error } = await supabase
     .from('wishlist_items')
@@ -24,9 +24,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const supabase = createAdminClient();
 
   const { product_id } = await request.json();
   if (!product_id) return NextResponse.json({ success: false, error: 'Product ID required' }, { status: 400 });
@@ -53,9 +53,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const supabase = createAdminClient();
 
   const { searchParams } = new URL(request.url);
   const productId = searchParams.get('product_id');

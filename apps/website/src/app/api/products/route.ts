@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   const sort = searchParams.get('sort') || 'newest';
   const featured = searchParams.get('featured');
 
-  const supabase = await createServerClient();
+  const supabase = createAdminClient();
 
   let query = supabase
     .from('products')
@@ -83,16 +83,20 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
-  const profile = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  const role = profile.data?.role;
-  if (!role || !['farmer', 'manufacturer', 'wholesaler'].includes(role)) {
+  const { data: userRole } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('role', 'seller')
+    .eq('is_active', true)
+    .maybeSingle();
+  if (!userRole) {
     return NextResponse.json({ success: false, error: 'Only sellers can create products' }, { status: 403 });
   }
 

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 export async function GET() {
-  const supabase = await createServerClient();
+  const supabase = createAdminClient();
 
   const { data: categories, error } = await supabase
     .from('categories')
@@ -38,15 +38,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (!['admin', 'super_admin'].includes(profile?.role || '')) {
+  if (!['admin', 'super_admin'].includes(user.role || '')) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 

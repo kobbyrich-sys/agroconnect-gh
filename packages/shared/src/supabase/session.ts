@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 
 const SESSION_COOKIE = 'agroconnect_session';
-const REFRESH_COOKIE = 'agroconnect_refresh';
 
 export async function setSessionCookies(token: string) {
   const cookieStore = await cookies();
@@ -19,7 +18,6 @@ export async function setSessionCookies(token: string) {
 export async function clearSessionCookies() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
-  cookieStore.delete(REFRESH_COOKIE);
 }
 
 export async function getSessionToken(): Promise<string | null> {

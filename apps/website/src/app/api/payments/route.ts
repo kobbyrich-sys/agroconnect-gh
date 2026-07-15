@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@agroconnect/shared';
+import { createAdminClient, getAuthUser } from '@agroconnect/shared';
 
 async function holdInEscrow(supabase: any, orderId: string, amount: number, userId: string) {
   const { data, error } = await supabase.rpc('hold_funds_in_escrow', {
@@ -12,11 +12,11 @@ async function holdInEscrow(supabase: any, orderId: string, amount: number, user
 }
 
 export async function POST(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const body = await request.json();
   const { order_id, method, provider } = body;
@@ -113,11 +113,11 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  const supabase = createAdminClient();
 
   const body = await request.json();
   const { order_id, reference, status } = body;
