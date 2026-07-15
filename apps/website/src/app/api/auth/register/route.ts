@@ -40,17 +40,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name } },
+    const { data: userData, error: createError } = await admin.rpc('create_user', {
+      p_email: email,
+      p_password: password,
+      p_full_name: full_name,
     });
 
-    if (signUpError) {
-      return NextResponse.json({ success: false, error: signUpError.message }, { status: 400 });
+    if (createError) {
+      if (createError.message?.includes('already exists') || createError.code === '23505') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'An account already exists with this email.',
+            links: { login: true, forgot_password: true },
+          },
+          { status: 409 },
+        );
+      }
+      return NextResponse.json({ success: false, error: createError.message }, { status: 400 });
     }
 
-    if (!authData.user) {
+    if (!userData) {
       return NextResponse.json(
         { success: false, error: 'Registration failed. Please try again.' },
         { status: 500 },
@@ -58,7 +68,7 @@ export async function POST(request: Request) {
     }
 
     const { error: profileError } = await admin.from('profiles').upsert({
-      id: authData.user.id,
+      id: userData.id,
       email,
       full_name,
       role: 'buyer',
@@ -71,7 +81,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      user: { id: authData.user.id, email, full_name, role: 'buyer' },
+      user: userData,
     });
   } catch (err) {
     return NextResponse.json(

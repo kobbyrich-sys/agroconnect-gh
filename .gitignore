@@ -50,3 +50,6 @@ apps/mobile/android/local.properties
 apps/mobile/android/key.properties
 apps/mobile/.idea/
 *.iml
+
+.vercel
+.env*

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(searchParams.get('verified') === 'true' ? 'Account created successfully! You can now sign in.' : '');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,6 +65,9 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-gray-600">Sign in to your AgroConnect GH account</p>
         </div>
 
+        {success && (
+          <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">{success}</div>
+        )}
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
         )}
@@ -120,5 +125,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md mx-auto mt-8 text-center text-gray-500">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

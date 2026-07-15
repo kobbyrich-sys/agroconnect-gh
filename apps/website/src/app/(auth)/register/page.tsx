@@ -60,7 +60,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/verify-email');
+      router.push('/login?verified=true');
     } catch {
       setError('An error occurred. Please try again.');
       setLoading(false);
