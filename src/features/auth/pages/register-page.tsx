@@ -29,11 +29,15 @@ export function RegisterPage() {
 
   const onSubmit = async (data: RegisterForm) => {
     setError(null)
-    const { error: err } = await signUp(data.email, data.password, data.fullName)
-    if (err) {
-      setError(err.message)
-    } else {
-      setSuccess(true)
+    try {
+      const { error: err } = await signUp(data.email, data.password, data.fullName)
+      if (err) {
+        setError(err.message)
+      } else {
+        setSuccess(true)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Sign up failed. Please try again.')
     }
   }
 
@@ -67,7 +71,7 @@ export function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
-              {error}
+              {String(error)}
             </div>
           )}
           <Input
