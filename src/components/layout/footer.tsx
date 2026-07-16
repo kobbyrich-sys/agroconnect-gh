@@ -1,44 +1,48 @@
-import Link from 'next/link';
-
 export function Footer() {
   return (
-    <footer className="bg-emerald-900 text-gray-300">
-      <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
+    <footer className="border-t border-earth-200 bg-earth-50">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
-                <span className="text-xs font-bold text-white">AG</span>
-              </div>
-              <span className="text-lg font-bold text-white">AgroConnect GH</span>
+            <div className="flex items-center gap-2 mb-4">
+              <img src="/logo.png" alt="AgroConnect GH" className="h-8 w-auto" />
+              <span className="text-lg font-bold text-agro-800">
+                AgroConnect<span className="text-earth-600">GH</span>
+              </span>
             </div>
-            <p className="text-sm leading-relaxed text-gray-400">
-              Ghana&apos;s digital agricultural and manufacturing marketplace.
+            <p className="text-sm text-earth-600">
+              Ghana&apos;s digital agricultural marketplace connecting farmers, processors, and buyers.
             </p>
           </div>
-
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Links</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/" className="text-sm transition-colors hover:text-white">Home</Link>
-              </li>
+            <h3 className="text-sm font-semibold text-earth-900 mb-3">Marketplace</h3>
+            <ul className="space-y-2 text-sm text-earth-600">
+              <li><a href="#" className="hover:text-agro-700 transition-colors">Browse Products</a></li>
+              <li><a href="#" className="hover:text-agro-700 transition-colors">Categories</a></li>
+              <li><a href="#" className="hover:text-agro-700 transition-colors">Sell on AgroConnect</a></li>
             </ul>
           </div>
-
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">Contact</h3>
-            <ul className="space-y-3 text-sm">
+            <h3 className="text-sm font-semibold text-earth-900 mb-3">Support</h3>
+            <ul className="space-y-2 text-sm text-earth-600">
+              <li><a href="#" className="hover:text-agro-700 transition-colors">Help Center</a></li>
+              <li><a href="#" className="hover:text-agro-700 transition-colors">Contact Us</a></li>
+              <li><a href="#" className="hover:text-agro-700 transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-agro-700 transition-colors">Privacy Policy</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-earth-900 mb-3">Contact</h3>
+            <ul className="space-y-2 text-sm text-earth-600">
               <li>Accra, Ghana</li>
               <li>info@agroconnectgh.com</li>
             </ul>
           </div>
         </div>
-
-        <div className="mt-12 border-t border-white/10 pt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 border-t border-earth-200 pt-8 text-center text-sm text-earth-500">
           &copy; {new Date().getFullYear()} AgroConnect GH. All rights reserved.
         </div>
       </div>
     </footer>
-  );
+  )
 }
