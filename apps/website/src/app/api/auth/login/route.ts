@@ -13,9 +13,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
+    const { client, applyCookies } = await createClient();
 
-    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: authData, error: signInError } = await client.auth.signInWithPassword({
       email,
       password,
     });
@@ -36,9 +36,9 @@ export async function POST(request: Request) {
       .from('profiles')
       .select('id, email, full_name, phone, role, region, avatar_url, status, created_at, updated_at')
       .eq('id', authData.user.id)
-      .single();
+      .maybeSingle();
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: authData.user.id,
@@ -46,6 +46,9 @@ export async function POST(request: Request) {
       },
       profile: profile || { role: 'buyer' },
     });
+
+    applyCookies(response);
+    return response;
   } catch (err) {
     return NextResponse.json(
       { success: false, error: err instanceof Error ? err.message : 'An error occurred' },

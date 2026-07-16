@@ -1,23 +1,25 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const { client } = await createClient();
 
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await client.auth.getSession();
 
     if (!session?.user) {
       return NextResponse.json({ success: true, user: null, profile: null });
     }
 
-    const { data: profile } = await supabase
+    const admin = createAdminClient();
+    const { data: profile } = await admin
       .from('profiles')
       .select('id, email, full_name, phone, role, region, avatar_url, status, created_at, updated_at')
       .eq('id', session.user.id)
-      .single();
+      .maybeSingle();
 
     return NextResponse.json({
       success: true,
@@ -25,7 +27,7 @@ export async function GET() {
         id: session.user.id,
         email: session.user.email,
       },
-      profile,
+      profile: profile || null,
     });
   } catch (err) {
     return NextResponse.json(

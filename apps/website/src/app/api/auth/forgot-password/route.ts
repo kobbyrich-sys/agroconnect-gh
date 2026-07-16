@@ -13,10 +13,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
+    const { client } = await createClient();
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${getBaseUrl()}/auth/reset-password`,
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: `${getBaseUrl()}/api/auth/callback?next=/reset-password`,
     });
 
     if (error) {

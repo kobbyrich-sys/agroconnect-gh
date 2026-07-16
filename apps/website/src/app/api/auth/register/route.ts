@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@agroconnect/shared';
 
 export async function POST(request: Request) {
@@ -20,7 +19,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
     const admin = createAdminClient();
 
     const { data: existingUser } = await admin
@@ -65,18 +63,6 @@ export async function POST(request: Request) {
         { success: false, error: 'Registration failed. Please try again.' },
         { status: 500 },
       );
-    }
-
-    const { error: profileError } = await admin.from('profiles').upsert({
-      id: userData.id,
-      email,
-      full_name,
-      role: 'buyer',
-      status: 'active',
-    });
-
-    if (profileError) {
-      return NextResponse.json({ success: false, error: profileError.message }, { status: 500 });
     }
 
     return NextResponse.json({

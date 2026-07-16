@@ -11,7 +11,12 @@ function LoginForm() {
   const passwordRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(searchParams.get('verified') === 'true' ? 'Account created successfully! You can now sign in.' : '');
+  const [success, setSuccess] = useState(
+    searchParams.get('verified') === 'true' ? 'Account created successfully! You can now sign in.' :
+    searchParams.get('reset') === 'success' ? 'Password reset successfully! You can now sign in.' : ''
+  );
+  const [pageError] = useState(searchParams.get('error') === 'auth_callback_error' ? 'Authentication failed. Please try again.' : '');
+  const redirectTo = searchParams.get('redirect') || '';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,6 +47,11 @@ function LoginForm() {
         return;
       }
 
+      if (redirectTo && !redirectTo.startsWith('/login')) {
+        router.push(redirectTo);
+        return;
+      }
+
       const role = data.profile?.role || 'buyer';
 
       if (role === 'admin' || role === 'super_admin') {
@@ -68,8 +78,8 @@ function LoginForm() {
         {success && (
           <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">{success}</div>
         )}
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        {(error || pageError) && (
+          <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error || pageError}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
