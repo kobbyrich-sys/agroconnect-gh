@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from '@/features/auth/pages/forgot-password-page'
 import { ResetPasswordPage } from '@/features/auth/pages/reset-password-page'
 import { ProfilePage } from '@/features/auth/pages/profile-page'
 import { SellerApplicationPage } from '@/features/seller/pages/seller-application-page'
+import { VerifyEmailPage } from '@/features/auth/pages/verify-email-page'
 import { AuthGuard } from '@/features/auth/components/auth-guard'
 import { GuestGuard } from '@/features/auth/components/guest-guard'
 
@@ -21,6 +22,7 @@ export function AppRoutes() {
         <Route path="/register" element={<GuestGuard><RegisterPage /></GuestGuard>} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/profile" element={<AuthGuard><ProfilePage /></AuthGuard>} />
         <Route path="/become-seller" element={<AuthGuard><SellerApplicationPage /></AuthGuard>} />
       </Route>
