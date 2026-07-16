@@ -2,28 +2,9 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useAuth } from '@/lib/auth';
-import { NotificationBell } from '@/components/layout/notification-bell';
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/marketplace', label: 'Marketplace' },
-  { href: '/categories', label: 'Categories' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-];
 
 export function Header() {
-  const { user, profile, loading, signOut } = useAuth();
   const [open, setOpen] = useState(false);
-
-  const role = profile?.role;
-
-  function getDashboardLink() {
-    if (role === 'admin') return '/admin';
-    if (role === 'seller') return '/seller';
-    return '/dashboard';
-  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-xs">
@@ -34,53 +15,6 @@ export function Header() {
           </div>
           <span className="text-lg font-bold text-gray-900">AgroConnect GH</span>
         </Link>
-
-        <nav className="hidden items-center gap-1 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-2 md:flex">
-          {loading ? null : user ? (
-            <>
-              <NotificationBell />
-              <Link
-                href={getDashboardLink()}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-              >
-                {profile?.full_name || 'Dashboard'}
-              </Link>
-              <button
-                onClick={() => signOut()}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100"
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-800"
-              >
-                Get Started
-              </Link>
-            </>
-          )}
-        </div>
 
         <button className="rounded-lg p-2 md:hidden" onClick={() => setOpen(!open)}>
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,51 +30,13 @@ export function Header() {
       {open && (
         <div className="border-t border-gray-100 bg-white px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
-                onClick={() => setOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <hr className="my-2" />
-            {user ? (
-              <>
-                <Link
-                  href={getDashboardLink()}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
-                  onClick={() => setOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={() => { signOut(); setOpen(false); }}
-                  className="rounded-lg px-4 py-2 text-left text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
-                  onClick={() => setOpen(false)}
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
-                  onClick={() => setOpen(false)}
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
+            <Link
+              href="/"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+              onClick={() => setOpen(false)}
+            >
+              Home
+            </Link>
           </nav>
         </div>
       )}

@@ -1,13 +1,11 @@
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import type { NextConfig } from 'next';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'images.pexels.com' },
-      { protocol: 'https', hostname: '*.supabase.co' },
-    ],
-  },
-  transpilePackages: ['@agroconnect/ui', '@agroconnect/models', '@agroconnect/shared'],
+  outputFileTracingRoot: join(__dirname, '..', '..', '..'),
 };
 
 export default nextConfig;
