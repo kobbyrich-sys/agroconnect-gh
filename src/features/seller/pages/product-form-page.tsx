@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
@@ -10,8 +10,8 @@ export function ProductFormPage() {
   const navigate = useNavigate()
   const { profile } = useAuth()
   const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [saving, setSaving] = useState<boolean>(false)
   const [form, setForm] = useState<any>({
     name: '',
     category_id: '',
@@ -26,12 +26,12 @@ export function ProductFormPage() {
   const isEdit = !!id
 
   useEffect(() => {
-    supabase.from('categories').select('*').order('name').then(({ data }) => {
+    supabase.from('categories').select('*').order('name').then(({ data }: { data: any }) => {
       if (data) setCategories(data)
     })
     if (id) {
       setLoading(true)
-      (supabase.from('products') as any).select('*').eq('id', id).single().then(({ data }: { data: any }) => {
+      ;(supabase.from('products') as any).select('*').eq('id', id).single().then(({ data }: { data: any }) => {
         if (data) {
           setForm({
             name: data.name,
@@ -49,7 +49,7 @@ export function ProductFormPage() {
     }
   }, [id])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!profile?.id) return
     setSaving(true)
@@ -76,7 +76,7 @@ export function ProductFormPage() {
       if (!error) navigate('/seller/products')
     }
     setSaving(false)
-  }
+  }, [form, isEdit, id, profile, navigate])
 
   if (loading) {
     return (
