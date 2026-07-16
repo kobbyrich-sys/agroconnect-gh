@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@agroconnect/shared';
 import { getBaseUrl } from '@/lib/utils';
 
 export async function POST(request: Request) {
@@ -13,17 +13,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${getBaseUrl()}/api/auth/callback?next=/reset-password`,
-    });
+    const admin = createAdminClient();
+    const { data: token, error } = await admin.rpc('generate_reset_token', { p_email: email });
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true });
+    if (!token) {
+      return NextResponse.json({ success: true });
+    }
+
+    const resetLink = `${getBaseUrl()}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+
+    return NextResponse.json({ success: true, resetLink });
   } catch (err) {
     return NextResponse.json(
       { success: false, error: err instanceof Error ? err.message : 'An error occurred' },

@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function ResetPasswordPage() {
+function ResetForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+  const email = searchParams.get('email');
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
@@ -38,10 +41,16 @@ export default function ResetPasswordPage() {
     }
 
     try {
+      const body: Record<string, string> = { password };
+      if (token && email) {
+        body.token = token;
+        body.email = email;
+      }
+
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -114,5 +123,13 @@ export default function ResetPasswordPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md mx-auto mt-8 text-center text-gray-500">Loading...</div>}>
+      <ResetForm />
+    </Suspense>
   );
 }

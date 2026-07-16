@@ -6,6 +6,7 @@ import Link from 'next/link';
 export default function ForgotPasswordPage() {
   const emailRef = useRef<HTMLInputElement>(null);
   const [sent, setSent] = useState(false);
+  const [resetLink, setResetLink] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -37,6 +38,7 @@ export default function ForgotPasswordPage() {
         return;
       }
 
+      setResetLink(data.resetLink || '');
       setSent(true);
       setLoading(false);
     } catch {
@@ -48,22 +50,43 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <div className="w-full max-w-md">
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-            <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+              <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h1 className="text-xl font-bold text-gray-900">Reset link generated</h1>
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Check your email</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            We&apos;ve sent a password reset link to your email. Please check your inbox.
-          </p>
-          <Link
-            href="/login"
-            className="mt-6 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800"
-          >
-            Back to login
-          </Link>
+          {resetLink ? (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Since email delivery is currently unavailable, use the link below to reset your password:
+              </p>
+              <a
+                href={resetLink}
+                className="block rounded-lg bg-emerald-700 px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-emerald-800"
+              >
+                Click here to reset your password
+              </a>
+              <p className="text-xs text-gray-500 break-all bg-gray-50 rounded p-3 select-all">
+                {resetLink}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 text-center">
+              If an account with that email exists, a reset link will be available.
+            </p>
+          )}
+          <div className="mt-6 text-center">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+            >
+              Back to login
+            </Link>
+          </div>
         </div>
       </div>
     );
