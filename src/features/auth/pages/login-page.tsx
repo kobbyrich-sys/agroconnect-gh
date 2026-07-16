@@ -1,23 +1,37 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Button, Input, Card, CardHeader, CardTitle } from '@/components/ui'
+import { useAuth } from '../hooks/use-auth'
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 type LoginForm = z.infer<typeof loginSchema>
 
 export function LoginPage() {
+  const { signIn } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [error, setError] = useState<string | null>(null)
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
+
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   })
 
-  const onSubmit = async (_data: LoginForm) => {
-    // Phase 2: implement authentication
+  const onSubmit = async (data: LoginForm) => {
+    setError(null)
+    const { error: err } = await signIn(data.email, data.password)
+    if (err) {
+      setError(err.message)
+    } else {
+      navigate(from, { replace: true })
+    }
   }
 
   return (
@@ -28,6 +42,11 @@ export function LoginPage() {
           <p className="mt-1 text-sm text-earth-600">Sign in to your account</p>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
+              {error}
+            </div>
+          )}
           <Input
             label="Email"
             type="email"

@@ -2,13 +2,11 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Button, Input, Card, CardHeader, CardTitle } from '@/components/ui'
-import { useAuth } from '../hooks/use-auth'
+import { supabase } from '@/lib/supabase'
 
-const registerSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Enter a valid email address'),
+const resetSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -16,24 +14,25 @@ const registerSchema = z.object({
   path: ['confirmPassword'],
 })
 
-type RegisterForm = z.infer<typeof registerSchema>
+type ResetForm = z.infer<typeof resetSchema>
 
-export function RegisterPage() {
-  const { signUp } = useAuth()
+export function ResetPasswordPage() {
+  const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterForm>({
-    resolver: zodResolver(registerSchema),
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ResetForm>({
+    resolver: zodResolver(resetSchema),
   })
 
-  const onSubmit = async (data: RegisterForm) => {
+  const onSubmit = async (data: ResetForm) => {
     setError(null)
-    const { error: err } = await signUp(data.email, data.password, data.fullName)
+    const { error: err } = await supabase.auth.updateUser({ password: data.password })
     if (err) {
       setError(err.message)
     } else {
       setSuccess(true)
+      setTimeout(() => navigate('/login'), 2000)
     }
   }
 
@@ -42,16 +41,11 @@ export function RegisterPage() {
       <div className="mx-auto max-w-md px-4 py-16">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Check your email</CardTitle>
+            <CardTitle>Password updated</CardTitle>
             <p className="mt-1 text-sm text-earth-600">
-              We&apos;ve sent you a confirmation link. Please check your email to verify your account.
+              Your password has been reset successfully. Redirecting to sign in...
             </p>
           </CardHeader>
-          <div className="text-center">
-            <Link to="/login" className="text-sm font-medium text-agro-600 hover:text-agro-700">
-              Go to sign in
-            </Link>
-          </div>
         </Card>
       </div>
     )
@@ -61,8 +55,10 @@ export function RegisterPage() {
     <div className="mx-auto max-w-md px-4 py-16">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>Create your account</CardTitle>
-          <p className="mt-1 text-sm text-earth-600">Join Ghana&apos;s agricultural marketplace</p>
+          <CardTitle>Set new password</CardTitle>
+          <p className="mt-1 text-sm text-earth-600">
+            Enter your new password below
+          </p>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
@@ -71,20 +67,7 @@ export function RegisterPage() {
             </div>
           )}
           <Input
-            label="Full Name"
-            autoComplete="name"
-            error={errors.fullName?.message}
-            {...register('fullName')}
-          />
-          <Input
-            label="Email"
-            type="email"
-            autoComplete="email"
-            error={errors.email?.message}
-            {...register('email')}
-          />
-          <Input
-            label="Password"
+            label="New Password"
             type="password"
             autoComplete="new-password"
             error={errors.password?.message}
@@ -98,15 +81,9 @@ export function RegisterPage() {
             {...register('confirmPassword')}
           />
           <Button type="submit" loading={isSubmitting} className="w-full">
-            Create Account
+            Update Password
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-earth-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-agro-600 hover:text-agro-700">
-            Sign in
-          </Link>
-        </p>
       </Card>
     </div>
   )

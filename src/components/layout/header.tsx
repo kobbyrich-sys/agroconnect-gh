@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/features/auth/hooks/use-auth'
+import { Button } from '@/components/ui'
 
 export function Header() {
+  const { user, profile, signOut } = useAuth()
+
   return (
     <header className="sticky top-0 z-50 border-b border-earth-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -14,15 +18,33 @@ export function Header() {
           <Link to="/marketplace" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
             Marketplace
           </Link>
-          <Link to="/login" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
-            Sign In
-          </Link>
-          <Link
-            to="/register"
-            className="rounded-lg bg-agro-600 px-4 py-2 text-sm font-medium text-white hover:bg-agro-700 transition-colors"
-          >
-            Get Started
-          </Link>
+          {user ? (
+            <>
+              {profile?.role === 'buyer' && (
+                <Link to="/become-seller" className="text-sm font-medium text-agro-600 hover:text-agro-700 transition-colors">
+                  Sell on AgroConnect
+                </Link>
+              )}
+              <Link to="/profile" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
+                {profile?.full_name ?? 'Profile'}
+              </Link>
+              <button
+                onClick={signOut}
+                className="text-sm font-medium text-earth-500 hover:text-red-600 transition-colors"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
+                Sign In
+              </Link>
+              <Link to="/register">
+                <Button size="sm">Get Started</Button>
+              </Link>
+            </>
+          )}
         </nav>
       </div>
     </header>
