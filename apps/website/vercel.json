@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd ../.. && rm -rf apps/website/.next && npx turbo build --filter=@agroconnect/website --force",
+  "buildCommand": "cd ../.. && npx turbo build --filter=@agroconnect/website",
   "installCommand": "cd ../.. && npm install"
 }
