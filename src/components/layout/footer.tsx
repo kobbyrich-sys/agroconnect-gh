@@ -5,7 +5,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <img src="/logo.png" alt="AgroConnect GH" className="h-8 w-auto" />
+              <img src="/logo.svg" alt="AgroConnect GH" className="h-8 w-auto" />
               <span className="text-lg font-bold text-agro-800">
                 AgroConnect<span className="text-earth-600">GH</span>
               </span>

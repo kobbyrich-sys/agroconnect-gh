@@ -5,7 +5,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-earth-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="AgroConnect GH" className="h-8 w-auto" />
+          <img src="/logo.svg" alt="AgroConnect GH" className="h-8 w-auto" />
           <span className="text-xl font-bold text-agro-800">
             AgroConnect<span className="text-earth-600">GH</span>
           </span>
