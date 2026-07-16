@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
   "buildCommand": "npx turbo build --filter=@agroconnect/website",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "outputDirectory": "apps/website/.next"
 }
