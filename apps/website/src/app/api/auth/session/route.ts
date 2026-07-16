@@ -4,11 +4,11 @@ import { createAdminClient } from '@agroconnect/shared';
 
 export async function GET() {
   try {
-    const { client } = await createClient();
+    const supabase = await createClient();
 
     const {
       data: { session },
-    } = await client.auth.getSession();
+    } = await supabase.auth.getSession();
 
     if (!session?.user) {
       return NextResponse.json({ success: true, user: null, profile: null });

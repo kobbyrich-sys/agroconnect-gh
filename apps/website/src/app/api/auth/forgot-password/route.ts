@@ -13,9 +13,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const { client } = await createClient();
+    const supabase = await createClient();
 
-    const { error } = await client.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${getBaseUrl()}/api/auth/callback?next=/reset-password`,
     });
 

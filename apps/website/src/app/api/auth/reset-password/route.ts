@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, applyCookies } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
@@ -12,16 +12,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const { client, applyCookies } = await createClient();
+    const supabase = await createClient();
 
-    const { error } = await client.auth.updateUser({ password });
+    const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 
     const response = NextResponse.json({ success: true });
-    applyCookies(response);
+    applyCookies(supabase, response);
     return response;
   } catch (err) {
     return NextResponse.json(
