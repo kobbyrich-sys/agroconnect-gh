@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button, Card } from '@/components/ui'
 import { SeoHelmet } from '@/components/seo/helmet'
 import { OrderCardSkeleton } from '@/components/ui/skeleton'
+import { AuthContext } from '@/features/auth/contexts/auth-context'
 
 export function AdminSellersPage() {
+  const { profile } = useContext(AuthContext)
   const [applications, setApplications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -19,13 +21,22 @@ export function AdminSellersPage() {
   useEffect(() => { fetch() }, [])
 
   const approve = async (app: any) => {
-    await (supabase.from('seller_applications') as any).update({ status: 'approved', reviewed_by: app.user_id }).eq('id', app.id)
-    await (supabase.from('profiles') as any).update({ role: 'seller' }).eq('id', app.user_id)
+    const { error: appErr } = await (supabase.from('seller_applications') as any)
+      .update({ status: 'approved', reviewed_by: profile?.id })
+      .eq('id', app.id)
+    if (appErr) return alert('Failed to approve application: ' + appErr.message)
+    const { error: profileErr } = await (supabase.from('profiles') as any)
+      .update({ role: 'seller' })
+      .eq('id', app.user_id)
+    if (profileErr) return alert('Application approved but failed to update user role: ' + profileErr.message)
     fetch()
   }
 
   const reject = async (app: any) => {
-    await (supabase.from('seller_applications') as any).update({ status: 'rejected', reviewed_by: app.user_id }).eq('id', app.id)
+    const { error } = await (supabase.from('seller_applications') as any)
+      .update({ status: 'rejected', reviewed_by: profile?.id })
+      .eq('id', app.id)
+    if (error) return alert('Failed to reject application: ' + error.message)
     fetch()
   }
 
