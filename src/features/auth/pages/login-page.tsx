@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { Button, Input, Card, CardHeader, CardTitle } from '@/components/ui'
 import { useAuth } from '../hooks/use-auth'
 
@@ -14,9 +14,15 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>
 
 export function LoginPage() {
-  const { signIn } = useAuth()
-  const navigate = useNavigate()
+  const { signIn, state, profile } = useAuth()
   const [error, setError] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+
+  if (state === 'authenticated' && profile?.role) {
+    if (profile.role === 'admin') return <Navigate to="/admin" replace />
+    if (profile.role === 'seller') return <Navigate to="/seller/dashboard" replace />
+    return <Navigate to="/marketplace" replace />
+  }
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -24,16 +30,9 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setError(null)
-    const { error: err, role } = await signIn(data.email, data.password)
-    if (err) {
-      setError(err)
-    } else if (role === 'admin') {
-      navigate('/admin', { replace: true })
-    } else if (role === 'seller') {
-      navigate('/seller/dashboard', { replace: true })
-    } else {
-      navigate('/marketplace', { replace: true })
-    }
+    setSubmitted(true)
+    const { error: err } = await signIn(data.email, data.password)
+    if (err) setError(err)
   }
 
   return (
@@ -45,7 +44,7 @@ export function LoginPage() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
               {error}
             </div>
           )}
@@ -70,7 +69,7 @@ export function LoginPage() {
               </Link>
             </div>
           </div>
-          <Button type="submit" loading={isSubmitting} className="w-full">
+          <Button type="submit" loading={isSubmitting || (submitted && state === 'loading')} className="w-full">
             Sign In
           </Button>
         </form>

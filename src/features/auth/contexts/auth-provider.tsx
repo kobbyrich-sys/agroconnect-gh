@@ -106,7 +106,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!s?.user) return { error: 'Authentication succeeded but no user was returned.' }
 
-      const found = await ensureProfile(s.user.id)
+      let found = await ensureProfile(s.user.id)
+
+      if (!found) {
+        try {
+          await (supabase.from('profiles') as any).insert({
+            id: s.user.id,
+            full_name: s.user.user_metadata?.full_name || s.user.email?.split('@')[0] || 'User',
+            role: 'buyer',
+          })
+          found = await fetchProfileById(s.user.id)
+        } catch {
+        }
+      }
 
       if (found) {
         if (!['buyer', 'seller', 'admin'].includes(found.role)) {
