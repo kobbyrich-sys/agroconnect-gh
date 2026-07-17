@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button, Input, Card, CardHeader, CardTitle } from '@/components/ui'
 import { useAuth } from '../hooks/use-auth'
 
@@ -16,9 +16,7 @@ type LoginForm = z.infer<typeof loginSchema>
 export function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
   const [error, setError] = useState<string | null>(null)
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -26,11 +24,15 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setError(null)
-    const { error: err } = await signIn(data.email, data.password)
+    const { error: err, role } = await signIn(data.email, data.password)
     if (err) {
-      setError(err.message)
+      setError(err)
+    } else if (role === 'admin') {
+      navigate('/admin', { replace: true })
+    } else if (role === 'seller') {
+      navigate('/seller/dashboard', { replace: true })
     } else {
-      navigate(from, { replace: true })
+      navigate('/marketplace', { replace: true })
     }
   }
 

@@ -3,7 +3,8 @@ import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button } from '@/components/ui'
 
 export function Header() {
-  const { user, profile, signOut } = useAuth()
+  const { state, profile, signOut } = useAuth()
+  const isAuthed = state === 'authenticated'
 
   return (
     <header className="sticky top-0 z-50 border-b border-earth-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -18,16 +19,11 @@ export function Header() {
           <Link to="/marketplace" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
             Marketplace
           </Link>
-          {user ? (
+          {isAuthed ? (
             <>
               {profile?.role === 'buyer' && (
                 <Link to="/become-seller" className="text-sm font-medium text-agro-600 hover:text-agro-700 transition-colors">
                   Sell on AgroConnect
-                </Link>
-              )}
-              {(profile?.role === 'seller' || profile?.role === 'admin') && (
-                <Link to="/seller/dashboard" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
-                  Dashboard
                 </Link>
               )}
               <Link to="/orders" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
@@ -57,7 +53,7 @@ export function Header() {
                 Sign Out
               </button>
             </>
-          ) : (
+          ) : state !== 'loading' ? (
             <>
               <Link to="/login" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 Sign In
@@ -66,7 +62,7 @@ export function Header() {
                 <Button size="sm">Get Started</Button>
               </Link>
             </>
-          )}
+          ) : null}
         </nav>
       </div>
     </header>

@@ -32,7 +32,7 @@ export function RegisterPage() {
     try {
       const { error: err } = await signUp(data.email, data.password, data.fullName)
       if (err) {
-        setError(err.message)
+        setError(err)
       } else {
         setSuccess(true)
       }
