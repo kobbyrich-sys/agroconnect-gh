@@ -13,6 +13,10 @@ import { SellerProductsPage } from '@/features/seller/pages/seller-products-page
 import { ProductFormPage } from '@/features/seller/pages/product-form-page'
 import { WalletPage } from '@/features/wallet/pages/wallet-page'
 import { WithdrawalPage } from '@/features/wallet/pages/withdrawal-page'
+import { OrdersPage } from '@/features/orders/pages/orders-page'
+import { OrderDetailPage } from '@/features/orders/pages/order-detail-page'
+import { ConversationsPage } from '@/features/messaging/pages/conversations-page'
+import { ChatPage } from '@/features/messaging/pages/chat-page'
 import { VerifyEmailPage } from '@/features/auth/pages/verify-email-page'
 import { AuthGuard } from '@/features/auth/components/auth-guard'
 import { GuestGuard } from '@/features/auth/components/guest-guard'
@@ -36,6 +40,10 @@ export function AppRoutes() {
         <Route path="/seller/products/edit/:id" element={<AuthGuard><ProductFormPage /></AuthGuard>} />
         <Route path="/wallet" element={<AuthGuard><WalletPage /></AuthGuard>} />
         <Route path="/wallet/withdraw" element={<AuthGuard><WithdrawalPage /></AuthGuard>} />
+        <Route path="/orders" element={<AuthGuard><OrdersPage /></AuthGuard>} />
+        <Route path="/orders/:id" element={<AuthGuard><OrderDetailPage /></AuthGuard>} />
+        <Route path="/messages" element={<AuthGuard><ConversationsPage /></AuthGuard>} />
+        <Route path="/messages/:id" element={<AuthGuard><ChatPage /></AuthGuard>} />
       </Route>
     </Routes>
   )
