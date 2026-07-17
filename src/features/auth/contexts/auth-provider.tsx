@@ -7,8 +7,12 @@ import { AuthContext } from './auth-context'
 import type { AuthState } from './auth-context'
 
 async function fetchProfileById(userId: string): Promise<Profile | null> {
-  const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
-  return data as Profile | null
+  try {
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+    return data as Profile | null
+  } catch {
+    return null
+  }
 }
 
 async function ensureProfile(userId: string, retries = 3): Promise<Profile | null> {
@@ -28,63 +32,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   const resolveSession = useCallback(async (s: Session | null) => {
-    setSession(s)
-    setUser(s?.user ?? null)
+    try {
+      setSession(s)
+      setUser(s?.user ?? null)
 
-    if (!s?.user) {
-      setProfile(null)
-      setState('unauthenticated')
       setError(null)
-      return
-    }
 
-    setState('loading')
-    setError(null)
+      if (!s?.user) {
+        setProfile(null)
+        setState('unauthenticated')
+        return
+      }
 
-    const profile = await ensureProfile(s.user.id)
+      setState('loading')
 
-    if (!profile) {
-      try {
-        await (supabase.from('profiles') as any).insert({
-          id: s.user.id,
-          full_name: s.user.user_metadata?.full_name || s.user.email?.split('@')[0] || 'User',
-          role: 'buyer',
-        })
-        const retryProfile = await fetchProfileById(s.user.id)
-        if (retryProfile) {
-          setProfile(retryProfile)
-          setState('authenticated')
+      const found = await ensureProfile(s.user.id)
+
+      if (!found) {
+        try {
+          await (supabase.from('profiles') as any).insert({
+            id: s.user.id,
+            full_name: s.user.user_metadata?.full_name || s.user.email?.split('@')[0] || 'User',
+            role: 'buyer',
+          })
+          const retryProfile = await fetchProfileById(s.user.id)
+          if (retryProfile) {
+            setProfile(retryProfile)
+            setState('authenticated')
+            return
+          }
+        } catch {
+        }
+      }
+
+      if (found) {
+        if (!['buyer', 'seller', 'admin'].includes(found.role)) {
+          setError(`Invalid account role: "${found.role}". Please contact support.`)
+          setState('unauthenticated')
           return
         }
-      } catch {
+        setProfile(found)
+        setState('authenticated')
+      } else {
+        setError('Your account profile could not be found. Please try refreshing the page or contact support.')
+        setState('unauthenticated')
       }
+    } catch {
+      setError('A network error occurred while loading your account. Please try again.')
+      setState('unauthenticated')
     }
-
-    if (!profile) {
-      setError(
-        'We could not load your account profile. This may be a temporary issue. Please try refreshing the page or contact support.'
-      )
-      setState('loading')
-      return
-    }
-
-    if (!['buyer', 'seller', 'admin'].includes(profile.role)) {
-      setError(`Invalid account role: "${profile.role}". Please contact support.`)
-      setState('loading')
-      return
-    }
-
-    setProfile(profile)
-    setState('authenticated')
   }, [])
 
   useEffect(() => {
-    supabase.auth
-      .getSession()
+    supabase.auth.getSession()
       .then(({ data: { session: s } }) => resolveSession(s))
-      .catch(() => {
-        setState('unauthenticated')
-      })
+      .catch(() => setState('unauthenticated'))
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       resolveSession(s)
@@ -94,41 +96,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [resolveSession])
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
-    if (err) return { error: err.message }
+    try {
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
+      if (err) return { error: err.message }
 
-    const s = data.session
-    setSession(s)
-    setUser(s?.user ?? null)
+      const s = data.session
+      setSession(s)
+      setUser(s?.user ?? null)
 
-    if (!s?.user) return { error: 'Authentication succeeded but no user was returned.' }
+      if (!s?.user) return { error: 'Authentication succeeded but no user was returned.' }
 
-    const profile = await ensureProfile(s.user.id)
+      const found = await ensureProfile(s.user.id)
 
-    if (!profile) {
+      if (found) {
+        if (!['buyer', 'seller', 'admin'].includes(found.role)) {
+          return { error: `Invalid account role: "${found.role}". Please contact support.` }
+        }
+        setProfile(found)
+        setState('authenticated')
+        return { error: null, role: found.role }
+      }
+
       return { error: 'Your account profile could not be found. Please contact support.' }
+    } catch {
+      return { error: 'A network error occurred. Please try again.' }
     }
-
-    if (!['buyer', 'seller', 'admin'].includes(profile.role)) {
-      return { error: `Invalid account role: "${profile.role}". Please contact support.` }
-    }
-
-    setProfile(profile)
-    setState('authenticated')
-    return { error: null, role: profile.role }
   }, [])
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    const { error: err } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    })
-    return { error: err?.message || null }
+    try {
+      const { error: err } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } },
+      })
+      return { error: err?.message || null }
+    } catch {
+      return { error: 'A network error occurred. Please try again.' }
+    }
   }, [])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch {
+    }
     setState('unauthenticated')
     setUser(null)
     setProfile(null)
@@ -137,8 +149,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const retry = useCallback(async () => {
-    const { data: { session: s } } = await supabase.auth.getSession()
-    resolveSession(s)
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession()
+      resolveSession(s)
+    } catch {
+      setState('unauthenticated')
+    }
   }, [resolveSession])
 
   const refreshProfile = useCallback(async () => {
