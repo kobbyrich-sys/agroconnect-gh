@@ -1,12 +1,12 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button, Card } from '@/components/ui'
 import { SeoHelmet } from '@/components/seo/helmet'
 import { OrderCardSkeleton } from '@/components/ui/skeleton'
-import { AuthContext } from '@/features/auth/contexts/auth-context'
+import { useAuth } from '@/features/auth/hooks/use-auth'
 
 export function AdminSellersPage() {
-  const { profile } = useContext(AuthContext)
+  const { profile } = useAuth()
   const [applications, setApplications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
