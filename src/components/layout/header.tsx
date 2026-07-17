@@ -25,6 +25,9 @@ export function Header() {
                   Sell on AgroConnect
                 </Link>
               )}
+              <Link to="/wallet" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
+                Wallet
+              </Link>
               <Link to="/profile" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 {profile?.full_name ?? 'Profile'}
               </Link>
