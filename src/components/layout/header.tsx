@@ -31,9 +31,17 @@ export function Header() {
               <Link to="/messages" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 Messages
               </Link>
+              <Link to="/favorites" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
+                Favorites
+              </Link>
               <Link to="/wallet" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 Wallet
               </Link>
+              {profile?.role === 'admin' && (
+                <Link to="/admin" className="text-sm font-medium text-agro-600 hover:text-agro-700 transition-colors">
+                  Admin
+                </Link>
+              )}
               <Link to="/profile" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 {profile?.full_name ?? 'Profile'}
               </Link>

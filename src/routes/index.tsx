@@ -17,6 +17,10 @@ import { OrdersPage } from '@/features/orders/pages/orders-page'
 import { OrderDetailPage } from '@/features/orders/pages/order-detail-page'
 import { ConversationsPage } from '@/features/messaging/pages/conversations-page'
 import { ChatPage } from '@/features/messaging/pages/chat-page'
+import { FavoritesPage } from '@/features/favorites/pages/favorites-page'
+import { AdminDashboard } from '@/features/admin/pages/admin-dashboard'
+import { AdminSellersPage } from '@/features/admin/pages/admin-sellers'
+import { AdminWithdrawalsPage } from '@/features/admin/pages/admin-withdrawals'
 import { VerifyEmailPage } from '@/features/auth/pages/verify-email-page'
 import { AuthGuard } from '@/features/auth/components/auth-guard'
 import { GuestGuard } from '@/features/auth/components/guest-guard'
@@ -44,6 +48,10 @@ export function AppRoutes() {
         <Route path="/orders/:id" element={<AuthGuard><OrderDetailPage /></AuthGuard>} />
         <Route path="/messages" element={<AuthGuard><ConversationsPage /></AuthGuard>} />
         <Route path="/messages/:id" element={<AuthGuard><ChatPage /></AuthGuard>} />
+        <Route path="/favorites" element={<AuthGuard><FavoritesPage /></AuthGuard>} />
+        <Route path="/admin" element={<AuthGuard requiredRole="admin"><AdminDashboard /></AuthGuard>} />
+        <Route path="/admin/sellers" element={<AuthGuard requiredRole="admin"><AdminSellersPage /></AuthGuard>} />
+        <Route path="/admin/withdrawals" element={<AuthGuard requiredRole="admin"><AdminWithdrawalsPage /></AuthGuard>} />
       </Route>
     </Routes>
   )
