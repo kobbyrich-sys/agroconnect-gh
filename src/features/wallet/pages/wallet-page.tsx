@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card, CardHeader, CardTitle } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
 import type { LedgerEntry } from '@/types/database'
 
 export function WalletPage() {
@@ -34,6 +35,7 @@ export function WalletPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Wallet" />
       <h1 className="text-2xl font-bold text-earth-900 mb-6">Wallet</h1>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-8">
         <Card>
@@ -57,7 +59,7 @@ export function WalletPage() {
           <CardTitle>Recent Transactions</CardTitle>
         </CardHeader>
         {entries.length === 0 ? (
-          <p className="px-6 pb-6 text-sm text-earth-500">No transactions yet.</p>
+          <p className="px-6 pb-6 text-sm text-earth-500">📭 No transactions yet. Your first sale will show up here!</p>
         ) : (
           <div className="divide-y divide-earth-100">
             {entries.map((e) => (

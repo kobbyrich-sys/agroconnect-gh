@@ -11,6 +11,8 @@ import { ProfilePage } from '@/features/auth/pages/profile-page'
 import { SellerApplicationPage } from '@/features/seller/pages/seller-application-page'
 import { SellerProductsPage } from '@/features/seller/pages/seller-products-page'
 import { ProductFormPage } from '@/features/seller/pages/product-form-page'
+import { SellerDashboardPage } from '@/features/seller/pages/seller-dashboard-page'
+import { SellerSettingsPage } from '@/features/seller/pages/seller-settings-page'
 import { WalletPage } from '@/features/wallet/pages/wallet-page'
 import { WithdrawalPage } from '@/features/wallet/pages/withdrawal-page'
 import { OrdersPage } from '@/features/orders/pages/orders-page'
@@ -42,6 +44,8 @@ export function AppRoutes() {
         <Route path="/seller/products" element={<AuthGuard><SellerProductsPage /></AuthGuard>} />
         <Route path="/seller/products/new" element={<AuthGuard><ProductFormPage /></AuthGuard>} />
         <Route path="/seller/products/edit/:id" element={<AuthGuard><ProductFormPage /></AuthGuard>} />
+        <Route path="/seller/dashboard" element={<AuthGuard><SellerDashboardPage /></AuthGuard>} />
+        <Route path="/seller/settings" element={<AuthGuard><SellerSettingsPage /></AuthGuard>} />
         <Route path="/wallet" element={<AuthGuard><WalletPage /></AuthGuard>} />
         <Route path="/wallet/withdraw" element={<AuthGuard><WithdrawalPage /></AuthGuard>} />
         <Route path="/orders" element={<AuthGuard><OrdersPage /></AuthGuard>} />

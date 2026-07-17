@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardHeader, CardTitle } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
 
 export function AdminDashboard() {
   const [stats, setStats] = useState<any>({})
@@ -25,6 +26,7 @@ export function AdminDashboard() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Admin Dashboard" />
       <h1 className="text-2xl font-bold text-earth-900 mb-6">Admin Dashboard</h1>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Card><CardHeader><CardTitle className="text-sm text-earth-500">Total Users</CardTitle><p className="text-2xl font-bold text-earth-900 mt-1">{stats.users}</p></CardHeader></Card>

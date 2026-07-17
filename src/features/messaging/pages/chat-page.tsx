@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
 
 export function ChatPage() {
   const { id } = useParams<{ id: string }>()
@@ -41,6 +42,7 @@ export function ChatPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Chat" />
       <Link to="/messages" className="text-sm text-agro-600 hover:text-agro-700 mb-4 inline-block">&larr; Back to Messages</Link>
       <Card className="p-0 overflow-hidden">
         <div className="h-[400px] overflow-y-auto p-4 space-y-3">

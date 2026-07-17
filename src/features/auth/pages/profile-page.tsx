@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuth } from '../hooks/use-auth'
 import { Button, Input, Card, CardHeader, CardTitle } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
 import { supabase } from '@/lib/supabase'
 
 const profileSchema = z.object({
@@ -41,6 +42,7 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
+      <SeoHelmet title="My Profile" />
       <h1 className="text-2xl font-bold text-earth-900 mb-8">My Profile</h1>
       <Card>
         <CardHeader>

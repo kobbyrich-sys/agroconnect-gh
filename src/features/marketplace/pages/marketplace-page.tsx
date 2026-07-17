@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ProductCard } from '../components/product-card'
+import { SeoHelmet } from '@/components/seo/helmet'
+import { ProductCardSkeleton } from '@/components/ui/skeleton'
 import type { Product, Category } from '@/types/database'
 
 export function MarketplacePage() {
@@ -37,6 +39,7 @@ export function MarketplacePage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Marketplace" description="Browse fresh produce, livestock, and farm equipment from Ghanaian farmers." />
       <h1 className="text-2xl font-bold text-earth-900 mb-6">Marketplace</h1>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-8">
@@ -71,15 +74,15 @@ export function MarketplacePage() {
       {loading ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-earth-200 bg-white p-4 animate-pulse">
-              <div className="aspect-square rounded-lg bg-earth-100 mb-4" />
-              <div className="h-4 bg-earth-100 rounded w-3/4 mb-2" />
-              <div className="h-4 bg-earth-100 rounded w-1/4" />
-            </div>
+            <ProductCardSkeleton key={i} />
           ))}
         </div>
       ) : products.length === 0 ? (
-        <p className="text-earth-500 text-center py-12">No products found.</p>
+        <div className="py-16 text-center">
+          <p className="text-4xl mb-3">🌾</p>
+          <p className="text-lg font-medium text-earth-700 mb-1">No products found</p>
+          <p className="text-sm text-earth-500">Try adjusting your search or filters.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (

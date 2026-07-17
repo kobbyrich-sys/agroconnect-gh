@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
+import { ProductCardSkeleton } from '@/components/ui/skeleton'
 import type { Product } from '@/types/database'
 
 export function SellerProductsPage() {
@@ -34,6 +36,7 @@ export function SellerProductsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="My Products" />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-earth-900">My Products</h1>
         <Link to="/seller/products/new"><Button>Add Product</Button></Link>
@@ -41,12 +44,12 @@ export function SellerProductsPage() {
       {loading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl bg-earth-100" />
+            <ProductCardSkeleton key={i} />
           ))}
         </div>
       ) : products.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-earth-500 mb-4">You haven&apos;t listed any products yet.</p>
+          <p className="text-earth-500 mb-4">🌱 You haven&apos;t listed any products yet. Start selling today!</p>
           <Link to="/seller/products/new"><Button>Add Your First Product</Button></Link>
         </Card>
       ) : (

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
-import { Card } from '@/components/ui'
+import { Button, Card } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
 
 export function ConversationsPage() {
   const { profile } = useAuth()
@@ -24,11 +25,16 @@ export function ConversationsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Messages" />
       <h1 className="text-2xl font-bold text-earth-900 mb-6">Messages</h1>
       {loading ? (
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 animate-pulse rounded-xl bg-earth-100" />)}</div>
       ) : conversations.length === 0 ? (
-        <Card className="p-8 text-center"><p className="text-earth-500">No conversations yet.</p></Card>
+        <Card className="p-8 text-center">
+          <p className="text-earth-500 mb-2">💬 No conversations yet.</p>
+          <p className="text-sm text-earth-400 mb-4">Start a conversation by contacting a seller from a product page.</p>
+          <Link to="/marketplace"><Button variant="outline" size="sm">Browse Marketplace</Button></Link>
+        </Card>
       ) : (
         <div className="space-y-3">
           {conversations.map((conv: any) => (

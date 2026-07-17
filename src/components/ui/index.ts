@@ -1,3 +1,5 @@
 export { Button } from './button'
 export { Input } from './input'
 export { Card, CardHeader, CardTitle } from './card'
+export { Skeleton, ProductCardSkeleton, OrderCardSkeleton, StatsCardSkeleton } from './skeleton'
+export { ErrorBoundary } from './error-boundary'

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
 import type { Product } from '@/types/database'
 
 export function ProductPage() {
@@ -97,10 +98,11 @@ export function ProductPage() {
   }
 
   if (loading) return <div className="mx-auto max-w-7xl px-4 py-8"><div className="animate-pulse space-y-4"><div className="h-8 bg-earth-100 rounded w-1/3" /><div className="h-64 bg-earth-100 rounded" /><div className="h-4 bg-earth-100 rounded w-2/3" /></div></div>
-  if (!product) return <div className="mx-auto max-w-7xl px-4 py-8 text-center"><p className="text-earth-500 mb-4">Product not found.</p><Link to="/marketplace"><Button variant="outline">Back to Marketplace</Button></Link></div>
+  if (!product) return <div className="mx-auto max-w-7xl px-4 py-8 text-center"><p className="text-earth-500 mb-4">🌾 Product not found. It may have been removed or is no longer available.</p><Link to="/marketplace"><Button variant="outline">Back to Marketplace</Button></Link></div>
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title={product.name} />
       <Link to="/marketplace" className="text-sm text-agro-600 hover:text-agro-700 mb-4 inline-block">&larr; Back to Marketplace</Link>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div>

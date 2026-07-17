@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Card } from '@/components/ui'
+import { OrderCardSkeleton } from '@/components/ui/skeleton'
+import { SeoHelmet } from '@/components/seo/helmet'
 
 export function OrdersPage() {
   const { profile } = useAuth()
@@ -31,15 +33,20 @@ export function OrdersPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Orders" />
       <h1 className="text-2xl font-bold text-earth-900 mb-6">Orders</h1>
       <div className="flex gap-4 mb-6">
         <button onClick={() => setTab('buying')} className={`text-sm font-medium pb-1 border-b-2 ${tab === 'buying' ? 'border-agro-600 text-agro-700' : 'border-transparent text-earth-500'}`}>Buying</button>
         <button onClick={() => setTab('selling')} className={`text-sm font-medium pb-1 border-b-2 ${tab === 'selling' ? 'border-agro-600 text-agro-700' : 'border-transparent text-earth-500'}`}>Selling</button>
       </div>
       {loading ? (
-        <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-24 animate-pulse rounded-xl bg-earth-100" />)}</div>
+        <div className="space-y-4">{[1,2,3].map(i => <OrderCardSkeleton key={i} />)}</div>
       ) : orders.length === 0 ? (
-        <Card className="p-8 text-center"><p className="text-earth-500">No orders yet.</p></Card>
+        <Card className="p-8 text-center">
+          <p className="text-4xl mb-3">{tab === 'buying' ? '🛒' : '📦'}</p>
+          <p className="text-lg font-medium text-earth-700 mb-1">No {tab} orders yet</p>
+          <p className="text-sm text-earth-500">{tab === 'buying' ? 'Browse the marketplace to place your first order.' : 'Your products haven\'t received any orders yet.'}</p>
+        </Card>
       ) : (
         <div className="space-y-4">
           {orders.map((order: any) => (

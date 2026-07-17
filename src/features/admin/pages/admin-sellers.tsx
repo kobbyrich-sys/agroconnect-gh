@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button, Card } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
+import { OrderCardSkeleton } from '@/components/ui/skeleton'
 
 export function AdminSellersPage() {
   const [applications, setApplications] = useState<any[]>([])
@@ -29,9 +31,10 @@ export function AdminSellersPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Admin - Sellers" />
       <h1 className="text-2xl font-bold text-earth-900 mb-6">Seller Applications</h1>
-      {loading ? <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-24 animate-pulse rounded-xl bg-earth-100" />)}</div>
-        : applications.length === 0 ? <Card className="p-8 text-center"><p className="text-earth-500">No applications yet.</p></Card>
+      {loading ? <div className="space-y-4">{[1,2,3].map(i => <OrderCardSkeleton key={i} />)}</div>
+        : applications.length === 0 ? <Card className="p-8 text-center"><p className="text-earth-500">📋 No seller applications yet.</p></Card>
         : <div className="space-y-4">{applications.map((app: any) => (
             <Card key={app.id} className="p-4">
               <div className="flex items-start justify-between">

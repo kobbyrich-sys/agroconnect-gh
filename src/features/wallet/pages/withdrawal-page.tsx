@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card, CardHeader, CardTitle } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
 
 export function WithdrawalPage() {
   const { user } = useAuth()
@@ -57,6 +58,7 @@ export function WithdrawalPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Withdraw Funds" />
       <h1 className="text-2xl font-bold text-earth-900 mb-2">Withdraw Funds</h1>
       <p className="text-sm text-earth-500 mb-6">Available balance: GH₵ {balance.toFixed(2)}</p>
       <Card className="p-6">

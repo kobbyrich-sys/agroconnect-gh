@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Card } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
+import { ProductCardSkeleton } from '@/components/ui/skeleton'
 import { ProductCard } from '@/features/marketplace/components/product-card'
 import type { Product } from '@/types/database'
 
@@ -22,14 +24,15 @@ export function FavoritesPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Favorites" />
       <h1 className="text-2xl font-bold text-earth-900 mb-6">My Favorites</h1>
       {loading ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-64 animate-pulse rounded-xl bg-earth-100" />)}
+          {[1,2,3,4].map(i => <ProductCardSkeleton key={i} />)}
         </div>
       ) : products.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-earth-500 mb-4">You haven&apos;t saved any products yet.</p>
+          <p className="text-earth-500 mb-4">❤️ You haven&apos;t saved any products yet. Tap the heart on a product to add it here!</p>
           <Link to="/marketplace" className="text-sm text-agro-600 hover:text-agro-700">Browse Marketplace</Link>
         </Card>
       ) : (

@@ -25,6 +25,11 @@ export function Header() {
                   Sell on AgroConnect
                 </Link>
               )}
+              {(profile?.role === 'seller' || profile?.role === 'admin') && (
+                <Link to="/seller/dashboard" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
+                  Dashboard
+                </Link>
+              )}
               <Link to="/orders" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 Orders
               </Link>

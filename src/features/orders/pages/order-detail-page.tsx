@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card, CardHeader, CardTitle } from '@/components/ui'
+import { SeoHelmet } from '@/components/seo/helmet'
+import { OrderCardSkeleton } from '@/components/ui/skeleton'
 
 const STATUS_FLOW: Record<string, string[]> = {
   pending: ['confirmed', 'cancelled'],
@@ -40,8 +42,8 @@ export function OrderDetailPage() {
     })
   }
 
-  if (loading) return <div className="mx-auto max-w-3xl px-4 py-8"><div className="h-64 animate-pulse rounded-xl bg-earth-100" /></div>
-  if (!order) return <div className="mx-auto max-w-3xl px-4 py-8 text-center"><p className="text-earth-500">Order not found.</p></div>
+  if (loading) return <div className="mx-auto max-w-3xl px-4 py-8"><OrderCardSkeleton /></div>
+  if (!order) return <div className="mx-auto max-w-3xl px-4 py-8 text-center"><p className="text-earth-500">📋 Order not found. It may have been removed.</p></div>
 
   const isBuyer = profile?.id === order.buyer_id
   const isSeller = profile?.id === order.seller_id
@@ -49,6 +51,7 @@ export function OrderDetailPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <SeoHelmet title="Order Details" />
       <Link to="/orders" className="text-sm text-agro-600 hover:text-agro-700 mb-4 inline-block">&larr; Back to Orders</Link>
       <h1 className="text-2xl font-bold text-earth-900 mb-2">Order #{order.id.slice(0, 8)}</h1>
       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize mb-6 ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : order.status === 'shipped' ? 'bg-purple-100 text-purple-800' : order.status === 'delivered' ? 'bg-agro-100 text-agro-800' : 'bg-red-100 text-red-800'}`}>{order.status}</span>
