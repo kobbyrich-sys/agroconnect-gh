@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -10,14 +10,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const retryRef = useRef(0)
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single()
-    if (data) setProfile(data as Profile)
+      .maybeSingle()
+    if (data) {
+      setProfile(data as Profile)
+      retryRef.current = 0
+    }
+    return !!data
   }, [])
 
   useEffect(() => {
@@ -40,15 +45,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return
+    retryRef.current = 0
+    const attempt = () => {
+      fetchProfile(user.id).then((ok) => {
+        if (!ok && retryRef.current < 5) {
+          retryRef.current++
+          setTimeout(attempt, 1000)
+        }
+      })
+    }
+    attempt()
+  }, [user, fetchProfile])
+
+  useEffect(() => {
+    if (!user) return
     const onFocus = () => fetchProfile(user.id)
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
   }, [user, fetchProfile])
 
+  useEffect(() => {
+    if (!user) return
+    const interval = setInterval(() => fetchProfile(user.id), 30000)
+    return () => clearInterval(interval)
+  }, [user, fetchProfile])
+
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (data?.user) await fetchProfile(data.user.id)
     return { error }
-  }, [])
+  }, [fetchProfile])
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     const { error } = await supabase.auth.signUp({
