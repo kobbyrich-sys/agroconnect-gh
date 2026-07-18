@@ -16,8 +16,19 @@ export function FavoritesPage() {
   useEffect(() => {
     if (!user) return
     setLoading(true)
-    ;(supabase.from('favorites') as any).select('products(*)').eq('user_id', user.id).then((res: any) => {
-      if (res.data) setProducts(res.data.map((f: any) => f.products))
+    ;(supabase.from('favorites') as any).select('products(*)').eq('user_id', user.id).then(async (res: any) => {
+      if (res.data) {
+        const pids = res.data.map((f: any) => f.products?.id).filter(Boolean)
+        if (pids.length) {
+          const { data: imgs } = await (supabase.from('product_images') as any).select('product_id, url').in('product_id', pids).order('sort_order')
+          const imgMap: Record<string, string> = {}
+          if (imgs) imgs.forEach((i: any) => { if (!imgMap[i.product_id]) imgMap[i.product_id] = i.url })
+          res.data.forEach((f: any) => {
+            if (f.products && imgMap[f.products.id]) f.products.product_images = [{ url: imgMap[f.products.id] }]
+          })
+        }
+        setProducts(res.data.map((f: any) => f.products))
+      }
       setLoading(false)
     })
   }, [user])

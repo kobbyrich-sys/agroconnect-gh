@@ -89,6 +89,13 @@ export type Profile = {
   avatar_url: string | null
   phone: string | null
   role: 'buyer' | 'seller' | 'admin'
+  bio: string | null
+  payout_method: string | null
+  payout_provider: string | null
+  payout_account: string | null
+  notify_new_order: boolean
+  notify_payout: boolean
+  location: string | null
   created_at: string
   updated_at: string
 }

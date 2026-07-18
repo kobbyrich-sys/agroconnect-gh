@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
-import { Button, Card } from '@/components/ui'
+import { Button, Card, FileUpload } from '@/components/ui'
+import { getImageUrl } from '@/lib/storage'
 import type { Product, Category } from '@/types/database'
 
 export function ProductFormPage() {
@@ -12,6 +13,8 @@ export function ProductFormPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [saving, setSaving] = useState<boolean>(false)
+  const [productId, setProductId] = useState<string | null>(null)
+  const [images, setImages] = useState<string[]>([])
   const [form, setForm] = useState<any>({
     name: '',
     category_id: '',
@@ -33,6 +36,7 @@ export function ProductFormPage() {
       setLoading(true)
       ;(supabase.from('products') as any).select('*').eq('id', id).single().then(({ data }: { data: any }) => {
         if (data) {
+          setProductId(data.id)
           setForm({
             name: data.name,
             category_id: data.category_id,
@@ -46,18 +50,43 @@ export function ProductFormPage() {
         }
         setLoading(false)
       })
+      ;(supabase.from('product_images') as any).select('url').eq('product_id', id).order('sort_order').then(({ data }: { data: any }) => {
+        if (data) setImages(data.map((i: any) => i.url))
+      })
     }
   }, [id])
+
+  const uploadImage = async (file: File) => {
+    const pid = productId || 'temp'
+    const ext = file.name.split('.').pop()
+    const path = `${profile?.id}/${pid}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('product-images').upload(path, file)
+    if (error) { alert('Upload failed: ' + error.message); return }
+    const url = path
+    if (productId) {
+      await (supabase.from('product_images') as any).insert({ product_id: productId, url, sort_order: images.length })
+    }
+    setImages(prev => [...prev, url])
+  }
+
+  const removeImage = async (url: string) => {
+    await supabase.storage.from('product-images').remove([url])
+    if (productId) {
+      await (supabase.from('product_images') as any).delete().eq('url', url)
+    }
+    setImages(prev => prev.filter(i => i !== url))
+  }
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!profile?.id) return
     setSaving(true)
 
+    const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now()
     const payload = {
       seller_id: profile.id,
       name: form.name,
-      slug: form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now(),
+      slug,
       category_id: form.category_id,
       description: form.description,
       price: parseFloat(form.price),
@@ -72,11 +101,21 @@ export function ProductFormPage() {
       const { error } = await (supabase.from('products') as any).update(payload).eq('id', id)
       if (!error) navigate('/seller/products')
     } else {
-      const { error } = await (supabase.from('products') as any).insert(payload)
-      if (!error) navigate('/seller/products')
+      const { data, error } = await (supabase.from('products') as any).insert(payload).select().single()
+      if (!error && data) {
+        setProductId(data.id)
+        for (const url of images) {
+          const newPath = url.replace('temp', data.id)
+          await supabase.storage.from('product-images').move(url, newPath)
+          await (supabase.from('product_images') as any).insert({ product_id: data.id, url: newPath, sort_order: 0 })
+          await supabase.storage.from('product-images').remove([url])
+        }
+        setImages([])
+        navigate('/seller/products')
+      }
     }
     setSaving(false)
-  }, [form, isEdit, id, profile, navigate])
+  }, [form, isEdit, id, profile, navigate, productId, images])
 
   if (loading) {
     return (
@@ -173,6 +212,18 @@ export function ProductFormPage() {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-earth-700 mb-1">Images</label>
+            <div className="flex flex-wrap gap-3">
+              {images.map((url, i) => (
+                <div key={i} className="relative h-24 w-24 overflow-hidden rounded-lg border border-earth-200">
+                  <img src={getImageUrl('product-images', url)!} alt="" className="h-full w-full object-cover" />
+                  <button type="button" onClick={() => removeImage(url)} className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs hover:bg-red-600">&times;</button>
+                </div>
+              ))}
+              <FileUpload onUpload={uploadImage} label="Add Image" multiple />
+            </div>
           </div>
           <div className="flex items-center gap-3 pt-2">
             <Button type="submit" disabled={saving}>{saving ? 'Saving...' : isEdit ? 'Update Product' : 'Create Product'}</Button>

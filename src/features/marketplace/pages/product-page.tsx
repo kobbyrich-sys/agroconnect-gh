@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card } from '@/components/ui'
 import { SeoHelmet } from '@/components/seo/helmet'
+import { getImageUrl } from '@/lib/storage'
 import type { Product } from '@/types/database'
 
 export function ProductPage() {
@@ -11,6 +12,8 @@ export function ProductPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [product, setProduct] = useState<Product | null>(null)
+  const [productImages, setProductImages] = useState<string[]>([])
+  const [currentImage, setCurrentImage] = useState(0)
   const [sellerName, setSellerName] = useState('')
   const [loading, setLoading] = useState(true)
   const [qty, setQty] = useState(1)
@@ -34,6 +37,9 @@ export function ProductPage() {
 
   useEffect(() => {
     if (!product) return
+    ;(supabase.from('product_images') as any).select('url').eq('product_id', product.id).order('sort_order').then((res: any) => {
+      if (res.data) setProductImages(res.data.map((i: any) => i.url))
+    })
     ;(supabase.from('reviews') as any).select('*, profiles(full_name)').eq('product_id', product.id).then((res: any) => {
       if (res.data) {
         setReviews(res.data)
@@ -106,8 +112,21 @@ export function ProductPage() {
       <Link to="/marketplace" className="text-sm text-agro-600 hover:text-agro-700 mb-4 inline-block">&larr; Back to Marketplace</Link>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div>
-          <div className="aspect-square rounded-xl bg-earth-100 flex items-center justify-center text-earth-400 text-lg relative">
-            {product.unit}
+          <div className="aspect-square rounded-xl bg-earth-100 flex items-center justify-center text-earth-400 text-lg relative overflow-hidden">
+            {productImages.length > 0 ? (
+              <>
+                <img src={getImageUrl('product-images', productImages[currentImage])!} alt={product.name} className="h-full w-full object-cover" />
+                {productImages.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+                    {productImages.map((_, i) => (
+                      <button key={i} type="button" onClick={() => setCurrentImage(i)} className={`h-2 w-2 rounded-full ${i === currentImage ? 'bg-white' : 'bg-white/50'}`} />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <span>{product.unit}</span>
+            )}
             <button onClick={toggleFav} className="absolute top-3 right-3 text-2xl">{isFav ? '❤️' : '🤍'}</button>
           </div>
           {/* Reviews section */}

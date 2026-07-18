@@ -21,7 +21,7 @@ export function MarketplacePage() {
 
   useEffect(() => {
     setLoading(true)
-    let query = supabase.from('products').select('*').eq('status', 'active')
+    let query = supabase.from('products').select('*, product_images(url)').eq('status', 'active')
 
     if (search) {
       query = query.ilike('name', `%${search}%`)

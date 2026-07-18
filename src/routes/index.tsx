@@ -25,6 +25,7 @@ import { FavoritesPage } from '@/features/favorites/pages/favorites-page'
 import { AdminDashboard } from '@/features/admin/pages/admin-dashboard'
 import { AdminSellersPage } from '@/features/admin/pages/admin-sellers'
 import { AdminWithdrawalsPage } from '@/features/admin/pages/admin-withdrawals'
+import { NotFoundPage } from '@/features/not-found/pages/not-found-page'
 
 export function AppRoutes() {
   return (
@@ -38,6 +39,7 @@ export function AppRoutes() {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       <Route element={<ProtectedRoute><AuthenticatedLayout /></ProtectedRoute>}>
