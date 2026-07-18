@@ -1,0 +1,1 @@
+CREATE POLICY "profiles_select_all_authenticated" ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
