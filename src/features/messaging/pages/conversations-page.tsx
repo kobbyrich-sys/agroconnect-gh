@@ -14,7 +14,7 @@ export function ConversationsPage() {
     if (!profile?.id) return
     setLoading(true)
     ;(supabase.from('conversations') as any)
-      .select('*')
+      .select('*, buyer:profiles!buyer_id(full_name), seller:profiles!seller_id(full_name)')
       .or(`buyer_id.eq.${profile.id},seller_id.eq.${profile.id}`)
       .order('updated_at', { ascending: false })
       .then((res: any) => {
@@ -37,17 +37,19 @@ export function ConversationsPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {conversations.map((conv: any) => (
+          {conversations.map((conv: any) => {
+            const otherName = profile?.id === conv.buyer_id ? conv.seller?.full_name : conv.buyer?.full_name
+            return (
             <Link key={conv.id} to={`/messages/${conv.id}`}>
               <Card className="p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-earth-900">
-                    Conversation #{conv.id.slice(0, 8)}
+                    {otherName || 'Unknown'}
                   </p>
                 </div>
               </Card>
             </Link>
-          ))}
+          )})}
         </div>
       )}
     </div>

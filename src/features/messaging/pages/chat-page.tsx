@@ -11,13 +11,30 @@ export function ChatPage() {
   const [messages, setMessages] = useState<any[]>([])
   const [content, setContent] = useState('')
   const [sending, setSending] = useState(false)
+  const [otherName, setOtherName] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!id) return
+    if (!id || !user) return
     ;(supabase.from('messages') as any).select('*').eq('conversation_id', id).order('created_at', { ascending: true }).then((res: any) => {
       if (res.data) setMessages(res.data)
     })
+    ;(supabase.from('conversations') as any).select('*, buyer:profiles!buyer_id(full_name), seller:profiles!seller_id(full_name)').eq('id', id).single().then((res: any) => {
+      if (res.data) {
+        const isBuyer = res.data.buyer_id === user.id
+        setOtherName(isBuyer ? res.data.seller?.full_name : res.data.buyer?.full_name)
+      }
+    })
+  }, [id, user?.id])
+
+  useEffect(() => {
+    if (!id) return
+    const channel = supabase.channel(`messages:${id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}` }, (payload: any) => {
+        setMessages(prev => [...prev, payload.new])
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [id])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
@@ -42,8 +59,9 @@ export function ChatPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-      <SeoHelmet title="Chat" />
+      <SeoHelmet title={otherName || 'Chat'} />
       <Link to="/messages" className="text-sm text-agro-600 hover:text-agro-700 mb-4 inline-block">&larr; Back to Messages</Link>
+      {otherName && <h1 className="text-lg font-bold text-earth-900 mb-4">{otherName}</h1>}
       <Card className="p-0 overflow-hidden">
         <div className="h-[400px] overflow-y-auto p-4 space-y-3">
           {messages.map((msg: any) => (
