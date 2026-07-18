@@ -65,12 +65,11 @@ export function OrderDetailPage() {
   const handleReceived = async () => {
     if (!confirm('Confirm that you have received the goods and they are satisfactory?')) return
     setProcessing(true)
-    const { data } = await (supabase.rpc as any)('confirm_delivery', { p_order_id: id })
-    if (data?.error) { alert('Error: ' + data.error); setProcessing(false); return }
+    const { data: deliveryData } = await (supabase.rpc as any)('confirm_delivery', { p_order_id: id })
+    if (deliveryData?.error) { alert('Error: ' + deliveryData.error); setProcessing(false); return }
     setOrder({ ...order, status: 'delivered', delivered_at: new Date().toISOString() })
-    supabase.functions.invoke('release-escrow', { body: { order_id: id } }).then((res: any) => {
-      if (res.error) console.error('Auto-release failed:', res.error)
-    })
+    const { data: escrowData } = await (supabase.rpc as any)('release_order_escrow', { p_order_id: id })
+    if (escrowData?.error) { console.error('Escrow release failed:', escrowData.error) }
     setProcessing(false)
   }
 
@@ -82,26 +81,18 @@ export function OrderDetailPage() {
       reference: 'AGRO-' + order.id.slice(0, 8) + '-' + Date.now(),
       metadata: { order_id: order.id },
       onSuccess: async (ref) => {
-        await (supabase.from('orders') as any).update({ payment_reference: ref, payment_status: 'awaiting_payment' }).eq('id', order.id)
-        setOrder({ ...order, payment_reference: ref, payment_status: 'awaiting_payment' })
-        supabase.functions.invoke('paystack-webhook', {
-          body: {
-            event: 'charge.success',
-            data: {
-              reference: ref,
-              amount: Math.round(Number(order.total) * 100),
-              channel: 'paystack',
-              metadata: { order_id: order.id },
-              customer: { email: user.email },
-            },
-          },
-        }).then((res: any) => {
-          if (!res.error) {
-            ;(supabase.from('orders') as any).select('*').eq('id', order.id).single().then((r: any) => {
-              if (r.data) setOrder(r.data)
-            })
-          }
+        const { data } = await (supabase.rpc as any)('confirm_paystack_payment', {
+          p_order_id: order.id,
+          p_reference: ref,
         })
+        if (data?.error) {
+          await (supabase.from('orders') as any).update({ payment_reference: ref, payment_status: 'awaiting_payment' }).eq('id', order.id)
+          setOrder({ ...order, payment_reference: ref, payment_status: 'awaiting_payment' })
+        } else {
+          ;(supabase.from('orders') as any).select('*').eq('id', order.id).single().then((r: any) => {
+            if (r.data) setOrder(r.data)
+          })
+        }
       },
     })
   }
