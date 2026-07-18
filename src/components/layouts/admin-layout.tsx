@@ -3,8 +3,13 @@ import { useAuth } from '@/features/auth/hooks/use-auth'
 
 const navItems = [
   { to: '/admin', label: 'Dashboard' },
+  { to: '/admin/users', label: 'Users' },
+  { to: '/admin/products', label: 'Products' },
+  { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/sellers', label: 'Seller Applications' },
   { to: '/admin/withdrawals', label: 'Withdrawals' },
+  { to: '/admin/reviews', label: 'Reviews' },
+  { to: '/admin/categories', label: 'Categories' },
 ]
 
 export function AdminLayout() {

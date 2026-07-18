@@ -26,6 +26,11 @@ import { CartPage } from '@/features/cart/pages/cart-page'
 import { AdminDashboard } from '@/features/admin/pages/admin-dashboard'
 import { AdminSellersPage } from '@/features/admin/pages/admin-sellers'
 import { AdminWithdrawalsPage } from '@/features/admin/pages/admin-withdrawals'
+import { AdminUsersPage } from '@/features/admin/pages/admin-users'
+import { AdminProductsPage } from '@/features/admin/pages/admin-products'
+import { AdminOrdersPage } from '@/features/admin/pages/admin-orders'
+import { AdminReviewsPage } from '@/features/admin/pages/admin-reviews'
+import { AdminCategoriesPage } from '@/features/admin/pages/admin-categories'
 import { NotFoundPage } from '@/features/not-found/pages/not-found-page'
 
 export function AppRoutes() {
@@ -66,8 +71,13 @@ export function AppRoutes() {
 
       <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/products" element={<AdminProductsPage />} />
+        <Route path="/admin/orders" element={<AdminOrdersPage />} />
         <Route path="/admin/sellers" element={<AdminSellersPage />} />
         <Route path="/admin/withdrawals" element={<AdminWithdrawalsPage />} />
+        <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+        <Route path="/admin/categories" element={<AdminCategoriesPage />} />
       </Route>
     </Routes>
   )
