@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://agroconnectgh.vercel.app/sitemap.xml
