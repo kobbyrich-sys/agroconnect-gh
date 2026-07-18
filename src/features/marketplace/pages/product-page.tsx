@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card } from '@/components/ui'
 import { SeoHelmet } from '@/components/seo/helmet'
 import { getImageUrl } from '@/lib/storage'
+import { CartContext } from '@/features/cart/contexts/cart-context'
 import type { Product } from '@/types/database'
 
 export function ProductPage() {
@@ -24,6 +25,8 @@ export function ProductPage() {
   const [rating, setRating] = useState(5)
   const [reviewContent, setReviewContent] = useState('')
   const [reviewing, setReviewing] = useState(false)
+  const [addedToCart, setAddedToCart] = useState(false)
+  const { addItem } = useContext(CartContext)!
 
   useEffect(() => {
     if (!slug) return
@@ -181,6 +184,11 @@ export function ProductPage() {
             <Button className="w-full" size="lg" loading={ordering} onClick={placeOrder} disabled={!user || user.id === product.seller_id}>
               {!user ? 'Sign In to Buy' : user.id === product.seller_id ? 'Your Product' : 'Buy Now'}
             </Button>
+            {user && user.id !== product.seller_id && (
+              <Button variant="outline" className="w-full" size="lg" onClick={() => { addItem({ productId: product.id, name: product.name, price: Number(product.price), unit: product.unit, sellerId: product.seller_id, imageUrl: productImages[0] || null, quantity: qty }); setAddedToCart(true); setTimeout(() => setAddedToCart(false), 2000) }}>
+                {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              </Button>
+            )}
             <Button variant="outline" className="w-full" size="lg" onClick={startConversation}>Contact Seller</Button>
           </div>
         </div>

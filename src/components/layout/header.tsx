@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button } from '@/components/ui'
+import { useContext } from 'react'
+import { CartContext } from '@/features/cart/contexts/cart-context'
 
 export function Header() {
   const { state, profile, signOut } = useAuth()
+  const { count } = useContext(CartContext)!
   const isAuthed = state === 'authenticated'
 
   return (
@@ -31,6 +34,9 @@ export function Header() {
               </Link>
               <Link to="/messages" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 Messages
+              </Link>
+              <Link to="/cart" className="relative text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
+                Cart{count > 0 && <span className="absolute -top-2 -right-3 flex h-4 w-4 items-center justify-center rounded-full bg-agro-600 text-[10px] font-bold text-white">{count > 9 ? '9+' : count}</span>}
               </Link>
               <Link to="/favorites" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
                 Favorites

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from '@/features/auth/contexts/auth-provider'
+import { CartProvider } from '@/features/cart/contexts/cart-provider'
 import { AppRoutes } from '@/routes'
 
 const queryClient = new QueryClient({
@@ -20,7 +21,9 @@ export function Providers() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <CartProvider>
+              <AppRoutes />
+            </CartProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

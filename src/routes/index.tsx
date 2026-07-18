@@ -22,6 +22,7 @@ import { OrderDetailPage } from '@/features/orders/pages/order-detail-page'
 import { ConversationsPage } from '@/features/messaging/pages/conversations-page'
 import { ChatPage } from '@/features/messaging/pages/chat-page'
 import { FavoritesPage } from '@/features/favorites/pages/favorites-page'
+import { CartPage } from '@/features/cart/pages/cart-page'
 import { AdminDashboard } from '@/features/admin/pages/admin-dashboard'
 import { AdminSellersPage } from '@/features/admin/pages/admin-sellers'
 import { AdminWithdrawalsPage } from '@/features/admin/pages/admin-withdrawals'
@@ -52,6 +53,7 @@ export function AppRoutes() {
         <Route path="/messages" element={<ConversationsPage />} />
         <Route path="/messages/:id" element={<ChatPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="/cart" element={<CartPage />} />
       </Route>
 
       <Route element={<SellerRoute><SellerLayout /></SellerRoute>}>
