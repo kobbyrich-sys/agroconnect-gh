@@ -4,6 +4,12 @@ import { PublicRoute, ProtectedRoute, SellerRoute, AdminRoute } from '@/componen
 import { HomePage } from '@/features/marketplace/pages/home-page'
 import { MarketplacePage } from '@/features/marketplace/pages/marketplace-page'
 import { ProductPage } from '@/features/marketplace/pages/product-page'
+import { SellerStorePage } from '@/features/marketplace/pages/seller-store-page'
+import { AboutPage } from '@/features/static/pages/about-page'
+import { ContactPage } from '@/features/static/pages/contact-page'
+import { HelpPage } from '@/features/static/pages/help-page'
+import { TermsPage } from '@/features/static/pages/terms-page'
+import { PrivacyPage } from '@/features/static/pages/privacy-page'
 import { LoginPage } from '@/features/auth/pages/login-page'
 import { RegisterPage } from '@/features/auth/pages/register-page'
 import { ForgotPasswordPage } from '@/features/auth/pages/forgot-password-page'
@@ -43,6 +49,12 @@ export function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/sellers/:id" element={<SellerStorePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
         <Route path="*" element={<NotFoundPage />} />

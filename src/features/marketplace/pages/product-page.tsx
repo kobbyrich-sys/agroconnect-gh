@@ -169,10 +169,10 @@ export function ProductPage() {
           <p className="text-sm text-earth-500 mt-2">Min order: {Number(product.min_order)} {product.unit}(s)</p>
           <p className="text-sm text-earth-500 mb-4">Stock: {Number(product.stock)} {product.unit}(s)</p>
           <p className="text-earth-600 leading-relaxed">{product.description}</p>
-          {sellerName && (
+          {sellerName && product && (
             <div className="mt-6 border-t border-earth-200 pt-6">
               <h2 className="text-sm font-medium text-earth-900 mb-2">Seller</h2>
-              <p className="text-earth-700">{sellerName}</p>
+              <Link to={`/sellers/${product.seller_id}`} className="text-agro-600 hover:text-agro-700 text-sm font-medium">{sellerName}</Link>
             </div>
           )}
           <div className="mt-6 space-y-3">
