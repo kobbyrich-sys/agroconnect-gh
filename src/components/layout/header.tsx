@@ -18,6 +18,11 @@ export function Header() {
           Sell on AgroConnect
         </Link>
       )}
+      {profile?.role === 'seller' && (
+        <Link to="/seller/dashboard" className="text-sm font-medium text-agro-600 hover:text-agro-700 transition-colors" onClick={() => setMenuOpen(false)}>
+          Seller Dashboard
+        </Link>
+      )}
       <Link to="/orders" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors" onClick={() => setMenuOpen(false)}>
         Orders
       </Link>
