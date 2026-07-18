@@ -66,6 +66,10 @@ export function OrderDetailPage() {
     if (!confirm('Confirm that you have received the goods and they are satisfactory?')) return
     setProcessing(true)
     await updateStatus('delivered')
+    supabase.functions.invoke('release-escrow', { body: { order_id: id } }).then((res: any) => {
+      if (res.error) console.error('Auto-release failed:', res.error)
+      else console.log('Escrow released:', res.data)
+    })
     setProcessing(false)
   }
 
@@ -101,6 +105,48 @@ export function OrderDetailPage() {
           {PAYMENT_STATUS_LABELS[order.payment_status] || order.payment_status}
         </span>
       </div>
+
+      {/* Order flow timeline */}
+      <Card className="mb-6 p-6">
+        <h3 className="text-sm font-semibold text-earth-900 mb-4">Order Progress</h3>
+        <div className="flex items-center gap-1">
+          {[
+            { key: 'pending', label: 'Placed', done: true },
+            { key: 'confirmed', label: 'Confirmed', done: ['confirmed','shipped','delivered'].includes(order.status) },
+            { key: 'shipped', label: 'Shipped', done: ['shipped','delivered'].includes(order.status) },
+            { key: 'delivered', label: 'Delivered', done: order.status === 'delivered' },
+          ].map((s, i) => (
+            <div key={s.key} className="flex items-center flex-1">
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${s.done ? 'bg-agro-600 text-white' : order.status === s.key ? 'border-2 border-agro-600 text-agro-600' : 'border-2 border-earth-200 text-earth-400 bg-white'}`}>
+                {s.done ? '✓' : i + 1}
+              </div>
+              <span className={`ml-1.5 text-xs ${s.done ? 'font-medium text-agro-700' : order.status === s.key ? 'font-medium text-agro-600' : 'text-earth-400'}`}>{s.label}</span>
+              {i < 3 && <div className={`mx-2 h-px flex-1 ${['confirmed','shipped','delivered'].includes(order.status) && i < ['confirmed','shipped','delivered'].indexOf(order.status) + 1 ? 'bg-agro-300' : 'bg-earth-200'}`} />}
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 flex items-center gap-1">
+          {[
+            { key: 'pending', label: 'Pending' },
+            { key: 'awaiting_payment', label: 'Awaiting Payment' },
+            { key: 'paid', label: 'Paid (Escrow)', done: ['paid','escrow_held','escrow_released'].includes(order.payment_status) },
+            { key: 'escrow_released', label: 'Released to Seller', done: order.payment_status === 'escrow_released' },
+          ].map((s, i) => {
+            const ps = order.payment_status
+            const isDone = s.done || (s.key === 'pending') || (s.key === 'awaiting_payment' && ['awaiting_payment','paid','escrow_held','escrow_released'].includes(ps)) || (s.key === 'paid' && ['paid','escrow_held','escrow_released'].includes(ps))
+            const isCurrent = ps === s.key
+            return (
+              <div key={s.key} className="flex items-center flex-1">
+                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${isDone ? 'bg-agro-600 text-white' : isCurrent ? 'border-2 border-agro-600 text-agro-600' : 'border-2 border-earth-200 text-earth-400 bg-white'}`}>
+                  {isDone ? '✓' : isCurrent ? '●' : i + 1}
+                </div>
+                <span className={`ml-1.5 text-xs ${isDone ? 'font-medium text-agro-700' : isCurrent ? 'font-medium text-agro-600' : 'text-earth-400'}`}>{s.label}</span>
+                {i < 3 && <div className={`mx-2 h-px flex-1 ${['awaiting_payment','paid','escrow_held','escrow_released'].indexOf(ps) > i ? 'bg-agro-300' : 'bg-earth-200'}`} />}
+              </div>
+            )
+          })}
+        </div>
+      </Card>
 
       <Card className="mb-6">
         <CardHeader><CardTitle>Items</CardTitle></CardHeader>
@@ -156,7 +202,7 @@ export function OrderDetailPage() {
       {isBuyer && (order.status === 'confirmed' || order.status === 'shipped') && (
         <Card className="p-6">
           <h3 className="text-sm font-medium text-earth-900 mb-3">Confirm Delivery</h3>
-          <p className="text-sm text-earth-600 mb-3">Let us know if you have received the goods. This will let the admin release the escrow payment to the seller.</p>
+          <p className="text-sm text-earth-600 mb-3">Confirm delivery to release the escrow payment to the seller automatically.</p>
           <Button onClick={handleReceived} loading={processing}>I Have Received the Goods</Button>
         </Card>
       )}
@@ -173,7 +219,7 @@ export function OrderDetailPage() {
       {isBuyer && order.payment_status === 'awaiting_payment' && (
         <Card className="p-6">
           <h3 className="text-sm font-medium text-earth-900 mb-3">Payment Pending</h3>
-          <p className="text-sm text-earth-600">Your payment reference <strong>{order.payment_reference}</strong> has been submitted. The admin will confirm your payment once verified.</p>
+          <p className="text-sm text-earth-600">Your payment reference <strong>{order.payment_reference}</strong> has been submitted. Payment will be confirmed automatically by Paystack.</p>
         </Card>
       )}
 
