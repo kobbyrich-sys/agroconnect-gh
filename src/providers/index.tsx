@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from '@/features/auth/contexts/auth-provider'
 import { CartProvider } from '@/features/cart/contexts/cart-provider'
+import { NotificationsProvider } from '@/features/notifications/contexts/notification-provider'
 import { AppRoutes } from '@/routes'
 
 const queryClient = new QueryClient({
@@ -22,7 +23,9 @@ export function Providers() {
         <BrowserRouter>
           <AuthProvider>
             <CartProvider>
-              <AppRoutes />
+              <NotificationsProvider>
+                <AppRoutes />
+              </NotificationsProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>

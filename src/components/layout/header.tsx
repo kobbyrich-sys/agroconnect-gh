@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button } from '@/components/ui'
 import { CartContext } from '@/features/cart/contexts/cart-context'
+import { NotificationBell } from '@/features/notifications/components/notification-bell'
 
 export function Header() {
   const { state, profile, signOut } = useAuth()
@@ -23,6 +24,7 @@ export function Header() {
       <Link to="/messages" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors" onClick={() => setMenuOpen(false)}>
         Messages
       </Link>
+      <NotificationBell />
       <Link to="/cart" className="relative text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors" onClick={() => setMenuOpen(false)}>
         Cart{count > 0 && <span className="absolute -top-2 -right-3 flex h-4 w-4 items-center justify-center rounded-full bg-agro-600 text-[10px] font-bold text-white">{count > 9 ? '9+' : count}</span>}
       </Link>

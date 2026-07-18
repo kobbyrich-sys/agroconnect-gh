@@ -38,6 +38,7 @@ import { AdminOrdersPage } from '@/features/admin/pages/admin-orders'
 import { AdminReviewsPage } from '@/features/admin/pages/admin-reviews'
 import { AdminCategoriesPage } from '@/features/admin/pages/admin-categories'
 import { NotFoundPage } from '@/features/not-found/pages/not-found-page'
+import { NotificationsPage } from '@/features/notifications/pages/notifications-page'
 
 export function AppRoutes() {
   return (
@@ -61,6 +62,7 @@ export function AppRoutes() {
       </Route>
 
       <Route element={<ProtectedRoute><AuthenticatedLayout /></ProtectedRoute>}>
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/become-seller" element={<SellerApplicationPage />} />
         <Route path="/wallet" element={<WalletPage />} />

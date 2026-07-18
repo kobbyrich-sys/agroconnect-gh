@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/hooks/use-auth'
 import { Button, Card, CardHeader, CardTitle } from '@/components/ui'
 import { SeoHelmet } from '@/components/seo/helmet'
 import { OrderCardSkeleton } from '@/components/ui/skeleton'
+import { payWithPaystack } from '@/lib/paystack'
 
 const STATUS_FLOW: Record<string, string[]> = {
   pending: ['confirmed', 'cancelled'],
@@ -66,6 +67,20 @@ export function OrderDetailPage() {
     setProcessing(true)
     await updateStatus('delivered')
     setProcessing(false)
+  }
+
+  const handlePayWithPaystack = () => {
+    if (!order || !profile) return
+    payWithPaystack({
+      email: profile.id, // will be replaced if we fetch the user's email
+      amount: Number(order.total),
+      reference: 'AGRO-' + order.id.slice(0, 8) + '-' + Date.now(),
+      metadata: { order_id: order.id },
+      onSuccess: async (ref) => {
+        await (supabase.from('orders') as any).update({ payment_reference: ref, payment_status: 'awaiting_payment' }).eq('id', order.id)
+        setOrder({ ...order, payment_reference: ref, payment_status: 'awaiting_payment' })
+      },
+    })
   }
 
   if (loading) return <div className="mx-auto max-w-3xl px-4 py-8"><OrderCardSkeleton /></div>
@@ -143,6 +158,22 @@ export function OrderDetailPage() {
           <h3 className="text-sm font-medium text-earth-900 mb-3">Confirm Delivery</h3>
           <p className="text-sm text-earth-600 mb-3">Let us know if you have received the goods. This will trigger the escrow release process.</p>
           <Button onClick={handleReceived} loading={processing}>I Have Received the Goods</Button>
+        </Card>
+      )}
+
+      {isBuyer && order.payment_status === 'pending' && (
+        <Card className="p-6">
+          <h3 className="text-sm font-medium text-earth-900 mb-3">Pay with Paystack</h3>
+          <p className="text-sm text-earth-600 mb-3">Pay securely via Mobile Money, Card, or Bank Transfer using Paystack.</p>
+          <p className="text-xs text-earth-400 mb-3">Amount: GH₵ {Number(order.total).toFixed(2)}</p>
+          <Button onClick={handlePayWithPaystack}>Pay Now</Button>
+        </Card>
+      )}
+
+      {isBuyer && order.payment_status === 'awaiting_payment' && (
+        <Card className="p-6">
+          <h3 className="text-sm font-medium text-earth-900 mb-3">Payment Pending</h3>
+          <p className="text-sm text-earth-600">Your payment reference <strong>{order.payment_reference}</strong> has been submitted. The admin will confirm your payment once verified.</p>
         </Card>
       )}
 

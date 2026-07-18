@@ -73,6 +73,11 @@ export interface Database {
         Insert: Omit<SellerApplication, 'created_at' | 'updated_at'>
         Update: Partial<SellerApplication>
       }
+      notifications: {
+        Row: Notification
+        Insert: Omit<Notification, 'created_at'>
+        Update: Partial<Notification>
+      }
     }
     Functions: {
       get_wallet_balance: {
@@ -267,4 +272,16 @@ export type SellerApplication = {
   reviewed_by: string | null
   created_at: string
   updated_at: string
+}
+
+export type Notification = {
+  id: string
+  user_id: string
+  type: 'new_order' | 'order_confirmed' | 'order_shipped' | 'order_delivered' | 'order_cancelled' | 'payment_confirmed' | 'payment_released' | 'new_review' | 'seller_approved' | 'seller_rejected' | 'withdrawal_approved' | 'withdrawal_processed' | 'withdrawal_rejected' | 'message_received' | 'general'
+  title: string
+  body: string
+  reference_id: string | null
+  reference_type: string | null
+  read: boolean
+  created_at: string
 }
