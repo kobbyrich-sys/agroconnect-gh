@@ -90,7 +90,7 @@ export function ProductPage() {
     if (user.id === product.seller_id) { alert('You cannot order your own product.'); return }
     setOrdering(true)
     const total = Number(product.price) * qty
-    const { data: order } = await (supabase.from('orders') as any).insert({ buyer_id: user.id, seller_id: product.seller_id, total, currency: 'GHS' }).select().single()
+    const { data: order } = await (supabase.from('orders') as any).insert({ buyer_id: user.id, seller_id: product.seller_id, total, currency: 'GHS', payment_status: 'pending' }).select().single()
     if (!order) { setOrdering(false); return }
     await (supabase.from('order_items') as any).insert({ order_id: order.id, product_id: product.id, quantity: qty, unit_price: Number(product.price), total })
     await (supabase.from('conversations') as any).insert({ order_id: order.id, buyer_id: user.id, seller_id: product.seller_id })

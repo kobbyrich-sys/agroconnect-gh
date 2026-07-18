@@ -31,6 +31,15 @@ export function OrdersPage() {
     refunded: 'bg-earth-100 text-earth-600',
   }
 
+  const paymentStatusColor: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    awaiting_payment: 'bg-orange-100 text-orange-800',
+    paid: 'bg-blue-100 text-blue-800',
+    escrow_held: 'bg-indigo-100 text-indigo-800',
+    escrow_released: 'bg-green-100 text-green-800',
+    refunded: 'bg-red-100 text-red-800',
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <SeoHelmet title="Orders" />
@@ -58,7 +67,10 @@ export function OrdersPage() {
                     <p className="text-xs text-earth-500">{new Date(order.created_at).toLocaleDateString()}</p>
                     <p className="text-sm text-earth-700 mt-1">GH₵ {Number(order.total).toFixed(2)}</p>
                   </div>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColor[order.status] || 'bg-earth-100 text-earth-600'}`}>{order.status}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColor[order.status] || 'bg-earth-100 text-earth-600'}`}>{order.status}</span>
+                    {order.payment_status && <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${paymentStatusColor[order.payment_status] || 'bg-earth-100 text-earth-600'}`}>{order.payment_status.replace('_', ' ')}</span>}
+                  </div>
                 </div>
               </Card>
             </Link>

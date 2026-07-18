@@ -79,6 +79,22 @@ export interface Database {
         Args: { wallet_id: string }
         Returns: number
       }
+      confirm_payment: {
+        Args: { p_order_id: string; p_payment_method: string; p_payment_reference: string; p_platform_fee_rate?: number }
+        Returns: Json
+      }
+      release_payment: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      refund_payment: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      process_withdrawal: {
+        Args: { p_request_id: string; p_new_status: string }
+        Returns: Json
+      }
     }
   }
 }
@@ -145,6 +161,15 @@ export type Order = {
   total: number
   currency: string
   notes: string | null
+  payment_status: 'pending' | 'awaiting_payment' | 'paid' | 'escrow_held' | 'escrow_released' | 'refunded'
+  payment_method: string | null
+  payment_reference: string | null
+  paid_at: string | null
+  escrow_held_at: string | null
+  escrow_released_at: string | null
+  delivered_at: string | null
+  platform_fee: number | null
+  platform_fee_rate: number | null
   created_at: string
   updated_at: string
 }

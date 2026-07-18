@@ -19,9 +19,8 @@ export function AdminWithdrawalsPage() {
   useEffect(() => { fetch() }, [])
 
   const process = async (req: any, status: string) => {
-    const updates: any = { status }
-    if (status === 'processed') updates.processed_at = new Date().toISOString()
-    await (supabase.from('withdrawal_requests') as any).update(updates).eq('id', req.id)
+    const { data } = await (supabase.rpc as any)('process_withdrawal', { p_request_id: req.id, p_new_status: status })
+    if (data?.error) { alert('Error: ' + data.error) }
     fetch()
   }
 

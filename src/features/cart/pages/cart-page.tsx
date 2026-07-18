@@ -24,6 +24,7 @@ export function CartPage() {
       seller_id: first.sellerId,
       total: orderTotal,
       currency: 'GHS',
+      payment_status: 'pending',
     }).select().single()
     if (error || !order) { setOrdering(false); return alert('Failed to create order') }
     for (const item of items) {

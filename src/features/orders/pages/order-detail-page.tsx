@@ -15,6 +15,24 @@ const STATUS_FLOW: Record<string, string[]> = {
   refunded: [],
 }
 
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
+  awaiting_payment: 'Awaiting Payment',
+  paid: 'Paid (Escrow Held)',
+  escrow_held: 'In Escrow',
+  escrow_released: 'Released to Seller',
+  refunded: 'Refunded',
+}
+
+const PAYMENT_STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  awaiting_payment: 'bg-orange-100 text-orange-800',
+  paid: 'bg-blue-100 text-blue-800',
+  escrow_held: 'bg-indigo-100 text-indigo-800',
+  escrow_released: 'bg-green-100 text-green-800',
+  refunded: 'bg-red-100 text-red-800',
+}
+
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { profile } = useAuth()
@@ -22,6 +40,7 @@ export function OrderDetailPage() {
   const [order, setOrder] = useState<any>(null)
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -37,13 +56,20 @@ export function OrderDetailPage() {
   }, [id])
 
   const updateStatus = async (status: string) => {
-    ;(supabase.from('orders') as any).update({ status }).eq('id', id).then(() => {
-      setOrder({ ...order, status })
+    ;(supabase.from('orders') as any).update({ status, delivered_at: status === 'delivered' ? new Date().toISOString() : undefined }).eq('id', id).then(() => {
+      setOrder({ ...order, status, delivered_at: status === 'delivered' ? new Date().toISOString() : order.delivered_at })
     })
   }
 
+  const handleReceived = async () => {
+    if (!confirm('Confirm that you have received the goods and they are satisfactory?')) return
+    setProcessing(true)
+    await updateStatus('delivered')
+    setProcessing(false)
+  }
+
   if (loading) return <div className="mx-auto max-w-3xl px-4 py-8"><OrderCardSkeleton /></div>
-  if (!order) return <div className="mx-auto max-w-3xl px-4 py-8 text-center"><p className="text-earth-500">📋 Order not found. It may have been removed.</p></div>
+  if (!order) return <div className="mx-auto max-w-3xl px-4 py-8 text-center"><p className="text-earth-500">Order not found. It may have been removed.</p></div>
 
   const isBuyer = profile?.id === order.buyer_id
   const isSeller = profile?.id === order.seller_id
@@ -53,8 +79,13 @@ export function OrderDetailPage() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <SeoHelmet title="Order Details" />
       <Link to="/orders" className="text-sm text-agro-600 hover:text-agro-700 mb-4 inline-block">&larr; Back to Orders</Link>
-      <h1 className="text-2xl font-bold text-earth-900 mb-2">Order #{order.id.slice(0, 8)}</h1>
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize mb-6 ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : order.status === 'shipped' ? 'bg-purple-100 text-purple-800' : order.status === 'delivered' ? 'bg-agro-100 text-agro-800' : 'bg-red-100 text-red-800'}`}>{order.status}</span>
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <h1 className="text-2xl font-bold text-earth-900">Order #{order.id.slice(0, 8)}</h1>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : order.status === 'shipped' ? 'bg-purple-100 text-purple-800' : order.status === 'delivered' ? 'bg-agro-100 text-agro-800' : 'bg-red-100 text-red-800'}`}>{order.status}</span>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${PAYMENT_STATUS_COLORS[order.payment_status] || 'bg-gray-100 text-gray-800'}`}>
+          {PAYMENT_STATUS_LABELS[order.payment_status] || order.payment_status}
+        </span>
+      </div>
 
       <Card className="mb-6">
         <CardHeader><CardTitle>Items</CardTitle></CardHeader>
@@ -75,6 +106,18 @@ export function OrderDetailPage() {
         </div>
       </Card>
 
+      <Card className="mb-6">
+        <CardHeader><CardTitle>Payment Details</CardTitle></CardHeader>
+        <div className="px-6 pb-6 space-y-2 text-sm">
+          <div className="flex justify-between"><span className="text-earth-500">Payment Status</span><span className="font-medium">{PAYMENT_STATUS_LABELS[order.payment_status] || order.payment_status}</span></div>
+          {order.payment_method && <div className="flex justify-between"><span className="text-earth-500">Method</span><span className="font-medium capitalize">{order.payment_method.replace('_', ' ')}</span></div>}
+          {order.payment_reference && <div className="flex justify-between"><span className="text-earth-500">Reference</span><span className="font-medium">{order.payment_reference}</span></div>}
+          {order.paid_at && <div className="flex justify-between"><span className="text-earth-500">Paid At</span><span className="font-medium">{new Date(order.paid_at).toLocaleDateString()}</span></div>}
+          {order.platform_fee && <div className="flex justify-between"><span className="text-earth-500">Platform Fee ({order.platform_fee_rate}%)</span><span className="font-medium">GH₵ {Number(order.platform_fee).toFixed(2)}</span></div>}
+          {order.escrow_released_at && <div className="flex justify-between"><span className="text-earth-500">Released At</span><span className="font-medium">{new Date(order.escrow_released_at).toLocaleDateString()}</span></div>}
+        </div>
+      </Card>
+
       {order.notes && (
         <Card className="mb-6">
           <CardHeader><CardTitle>Notes</CardTitle></CardHeader>
@@ -85,7 +128,7 @@ export function OrderDetailPage() {
       {nextStatuses.length > 0 && (isSeller || (isBuyer && order.status === 'pending')) && (
         <Card className="p-6">
           <h3 className="text-sm font-medium text-earth-900 mb-3">Update Status</h3>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {nextStatuses.map((s) => (
               <Button key={s} size="sm" onClick={() => updateStatus(s)} className="capitalize">
                 {s === 'cancelled' ? 'Cancel Order' : `Mark as ${s}`}
@@ -95,8 +138,16 @@ export function OrderDetailPage() {
         </Card>
       )}
 
-      <div className="mt-4">
-        <Button variant="outline" onClick={() => navigate(`/messages?order=${order.id}`)}>Contact Seller</Button>
+      {isBuyer && order.status === 'shipped' && (
+        <Card className="p-6">
+          <h3 className="text-sm font-medium text-earth-900 mb-3">Confirm Delivery</h3>
+          <p className="text-sm text-earth-600 mb-3">Let us know if you have received the goods. This will trigger the escrow release process.</p>
+          <Button onClick={handleReceived} loading={processing}>I Have Received the Goods</Button>
+        </Card>
+      )}
+
+      <div className="mt-4 flex gap-2">
+        <Button variant="outline" onClick={() => navigate(`/messages?order=${order.id}`)}>Contact {isBuyer ? 'Seller' : 'Buyer'}</Button>
       </div>
     </div>
   )
