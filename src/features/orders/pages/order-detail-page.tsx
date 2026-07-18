@@ -36,7 +36,7 @@ const PAYMENT_STATUS_COLORS: Record<string, string> = {
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const navigate = useNavigate()
   const [order, setOrder] = useState<any>(null)
   const [items, setItems] = useState<any[]>([])
@@ -70,9 +70,9 @@ export function OrderDetailPage() {
   }
 
   const handlePayWithPaystack = () => {
-    if (!order || !profile) return
+    if (!order || !profile || !user?.email) { alert('Email not available. Try signing out and back in.'); return }
     payWithPaystack({
-      email: profile.id, // will be replaced if we fetch the user's email
+      email: user.email,
       amount: Number(order.total),
       reference: 'AGRO-' + order.id.slice(0, 8) + '-' + Date.now(),
       metadata: { order_id: order.id },
