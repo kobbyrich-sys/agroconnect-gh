@@ -1,6 +1,6 @@
 // Paystack public key - replace with your actual key from https://dashboard.paystack.com
 // For testing in Ghana, use a test key from paystack.com
-const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_xxxxxxxxxxxxx'
+const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_b5befaf043cbcbc221d970d2e9e9dfda73f677fa'
 
 // Ensure Paystack script is loaded
 function loadPaystackScript(): Promise<void> {
