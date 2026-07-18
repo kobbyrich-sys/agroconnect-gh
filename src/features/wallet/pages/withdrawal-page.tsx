@@ -61,12 +61,17 @@ export function WithdrawalPage() {
       <SeoHelmet title="Withdraw Funds" />
       <h1 className="text-2xl font-bold text-earth-900 mb-2">Withdraw Funds</h1>
       <p className="text-sm text-earth-500 mb-6">Available balance: GH₵ {balance.toFixed(2)}</p>
+      {balance <= 0 && (
+        <div className="mb-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
+          No funds available to withdraw. Funds are released to your wallet after an admin releases escrow on delivered orders.
+        </div>
+      )}
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
           <div>
             <label className="block text-sm font-medium text-earth-700 mb-1">Amount (GH₵)</label>
-            <input type="number" step="0.01" min="0" max={balance} required value={amount}
+            <input type="number" step="0.01" min="0" max={balance || 0} required value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500" />
           </div>

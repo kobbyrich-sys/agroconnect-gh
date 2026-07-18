@@ -153,10 +153,10 @@ export function OrderDetailPage() {
         </Card>
       )}
 
-      {isBuyer && order.status === 'shipped' && (
+      {isBuyer && (order.status === 'confirmed' || order.status === 'shipped') && (
         <Card className="p-6">
           <h3 className="text-sm font-medium text-earth-900 mb-3">Confirm Delivery</h3>
-          <p className="text-sm text-earth-600 mb-3">Let us know if you have received the goods. This will trigger the escrow release process.</p>
+          <p className="text-sm text-earth-600 mb-3">Let us know if you have received the goods. This will let the admin release the escrow payment to the seller.</p>
           <Button onClick={handleReceived} loading={processing}>I Have Received the Goods</Button>
         </Card>
       )}
