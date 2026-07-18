@@ -4,14 +4,14 @@ import { Button } from '@/components/ui'
 export function HomePage() {
   return (
     <div>
-      <section className="relative overflow-hidden bg-gradient-to-b from-agro-50 to-white">
+      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#084C31_0%,#0B5D3B_45%,#084C31_100%)]">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-earth-900 sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
               Ghana&apos;s Agricultural{' '}
-              <span className="text-agro-600">Marketplace</span>
+              <span className="text-agro-300">Marketplace</span>
             </h1>
-            <p className="mt-6 text-lg text-earth-600">
+            <p className="mt-6 text-lg text-earth-100">
               Connect directly with farmers, agro-processors, and buyers across Ghana.
               Trade agricultural products securely with escrow protection.
             </p>

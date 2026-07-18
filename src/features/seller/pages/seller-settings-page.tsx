@@ -89,7 +89,7 @@ export function SellerSettingsPage() {
                 value={bio}
                 onChange={e => setBio(e.target.value)}
                 rows={3}
-                className="block w-full rounded-lg border border-earth-300 px-3 py-2 text-sm placeholder:text-earth-400 focus:border-agro-500 focus:outline-none focus:ring-1 focus:ring-agro-500"
+                className="block w-full rounded-lg border border-earth-300 px-3 py-2 text-sm placeholder:text-earth-400 focus:border-agro-700 focus:outline-none focus:ring-1 focus:ring-agro-700"
                 placeholder="Tell buyers about your farm or products..."
               />
             </div>
@@ -106,7 +106,7 @@ export function SellerSettingsPage() {
               <select
                 value={payoutMethod}
                 onChange={e => setPayoutMethod(e.target.value as any)}
-                className="block w-full rounded-lg border border-earth-300 px-3 py-2 text-sm focus:border-agro-500 focus:outline-none focus:ring-1 focus:ring-agro-500"
+                className="block w-full rounded-lg border border-earth-300 px-3 py-2 text-sm focus:border-agro-700 focus:outline-none focus:ring-1 focus:ring-agro-700"
               >
                 <option value="mobile_money">Mobile Money</option>
                 <option value="bank_transfer">Bank Transfer</option>
@@ -137,7 +137,7 @@ export function SellerSettingsPage() {
                 type="checkbox"
                 checked={notifyNewOrder}
                 onChange={e => setNotifyNewOrder(e.target.checked)}
-                className="h-4 w-4 rounded border-earth-300 text-agro-600 focus:ring-agro-500"
+                className="h-4 w-4 rounded border-earth-300 text-agro-700 focus:ring-agro-700"
               />
               <span className="text-sm text-earth-700">Email me when I receive a new order</span>
             </label>
@@ -146,7 +146,7 @@ export function SellerSettingsPage() {
                 type="checkbox"
                 checked={notifyPayout}
                 onChange={e => setNotifyPayout(e.target.checked)}
-                className="h-4 w-4 rounded border-earth-300 text-agro-600 focus:ring-agro-500"
+                className="h-4 w-4 rounded border-earth-300 text-agro-700 focus:ring-agro-700"
               />
               <span className="text-sm text-earth-700">Email me when a payout is processed</span>
             </label>

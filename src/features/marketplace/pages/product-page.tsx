@@ -115,7 +115,7 @@ export function ProductPage() {
       <Link to="/marketplace" className="text-sm text-agro-600 hover:text-agro-700 mb-4 inline-block">&larr; Back to Marketplace</Link>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div>
-          <div className="aspect-square rounded-xl bg-earth-100 flex items-center justify-center text-earth-400 text-lg relative overflow-hidden">
+          <div className="aspect-square max-h-72 sm:max-h-none rounded-xl bg-earth-100 flex items-center justify-center text-earth-400 text-lg relative overflow-hidden">
             {productImages.length > 0 ? (
               <>
                 <img src={getImageUrl('product-images', productImages[currentImage])!} alt={product.name} className="h-full w-full object-cover" />
@@ -157,7 +157,7 @@ export function ProductPage() {
                 <select value={rating} onChange={(e) => setRating(Number(e.target.value))} className="rounded-lg border border-earth-300 px-3 py-1 text-sm">
                   {[5,4,3,2,1].map(n => <option key={n} value={n}>{'★'.repeat(n)}{'☆'.repeat(5-n)}</option>)}
                 </select>
-                <textarea value={reviewContent} onChange={(e) => setReviewContent(e.target.value)} placeholder="Your review (optional)" rows={3} className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500" />
+                <textarea value={reviewContent} onChange={(e) => setReviewContent(e.target.value)} placeholder="Your review (optional)" rows={3} className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700" />
                 <Button type="submit" size="sm" loading={reviewing}>Submit Review</Button>
               </form>
             )}
@@ -178,7 +178,7 @@ export function ProductPage() {
           <div className="mt-6 space-y-3">
             <div className="flex items-center gap-3">
               <label className="text-sm text-earth-700">Quantity ({product.unit}):</label>
-              <input type="number" min={Number(product.min_order)} max={Number(product.stock)} value={qty} onChange={(e) => setQty(Number(e.target.value))} className="w-24 rounded-lg border border-earth-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500" />
+              <input type="number" min={Number(product.min_order)} max={Number(product.stock)} value={qty} onChange={(e) => setQty(Number(e.target.value))} className="w-24 rounded-lg border border-earth-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700" />
               <span className="text-sm text-earth-600">= GH₵ {(Number(product.price) * qty).toFixed(2)}</span>
             </div>
             <Button className="w-full" size="lg" loading={ordering} onClick={placeOrder} disabled={!user || user.id === product.seller_id}>

@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/use-auth'
+import { Logo } from '@/components/ui'
 
 const navItems = [
   { to: '/seller/dashboard', label: 'Dashboard' },
@@ -15,12 +16,7 @@ export function SellerLayout() {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 border-b border-earth-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.svg" alt="AgroConnect GH" className="h-8 w-auto" />
-            <span className="text-xl font-bold text-agro-800">
-              AgroConnect<span className="text-earth-600">GH</span>
-            </span>
-          </Link>
+          <Logo className="h-8 w-auto" linkTo="/" compact showTagline={false} />
           <div className="flex items-center gap-4">
             <Link to="/marketplace" className="text-sm font-medium text-earth-600 hover:text-agro-700">Marketplace</Link>
             <Link to="/orders" className="text-sm font-medium text-earth-600 hover:text-agro-700">Orders</Link>

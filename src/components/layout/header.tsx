@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/use-auth'
-import { Button } from '@/components/ui'
+import { Button, Logo } from '@/components/ui'
 import { CartContext } from '@/features/cart/contexts/cart-context'
 import { NotificationBell } from '@/features/notifications/components/notification-bell'
 
@@ -70,12 +70,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-earth-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="AgroConnect GH" className="h-8 w-auto" />
-          <span className="text-xl font-bold text-agro-800">
-            AgroConnect<span className="text-earth-600">GH</span>
-          </span>
-        </Link>
+        <Logo className="h-8 w-auto" linkTo="/" compact showTagline={false} />
         <nav className="hidden items-center gap-4 md:flex">
           <Link to="/marketplace" className="text-sm font-medium text-earth-600 hover:text-agro-700 transition-colors">
             Marketplace

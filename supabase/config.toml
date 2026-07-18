@@ -17,5 +17,11 @@ enabled = true
 enabled = true
 policy = "per_worker"
 
+[functions.paystack-webhook]
+verify_jwt = false
+
+[functions.release-escrow]
+verify_jwt = true
+
 [experimental]
 orioledb_version = "1.3.5"

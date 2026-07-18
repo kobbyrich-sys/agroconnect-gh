@@ -48,7 +48,7 @@ export function AdminCategoriesPage() {
           <Input label="Name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Fresh Vegetables" required />
           <div>
             <label className="mb-1 block text-sm font-medium text-earth-700">Description (optional)</label>
-            <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description" className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500" />
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description" className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700" />
           </div>
           <Button type="submit" loading={saving}>Add Category</Button>
         </form>

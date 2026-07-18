@@ -10,7 +10,7 @@ export function AdminWithdrawalsPage() {
 
   const fetch = () => {
     setLoading(true)
-    ;(supabase.from('withdrawal_requests') as any).select('*, wallets!inner(user_id, profiles!inner(full_name))').order('created_at', { ascending: false }).then((res: any) => {
+    ;(supabase.from('withdrawal_requests') as any).select('*').order('created_at', { ascending: false }).then((res: any) => {
       if (res.data) setRequests(res.data)
       setLoading(false)
     })
@@ -31,12 +31,19 @@ export function AdminWithdrawalsPage() {
       {loading ? <div className="space-y-4">{[1,2,3].map(i => <OrderCardSkeleton key={i} />)}</div>
         : requests.length === 0 ? <Card className="p-8 text-center"><p className="text-earth-500">💰 No withdrawal requests.</p></Card>
         : <div className="space-y-4">{requests.map((r: any) => (
-            <Card key={r.id} className="p-4">
+              <Card key={r.id} className="p-4">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-earth-900">GH₵ {Number(r.amount).toFixed(2)}</p>
                   <p className="text-xs text-earth-600">{r.method.replace('_', ' ')} &middot; {r.provider || '-'}</p>
                   <p className="text-xs text-earth-500">{new Date(r.created_at).toLocaleDateString()}</p>
+                  {r.account_details && (
+                    <p className="text-xs text-earth-700 mt-1 font-mono">
+                      {r.method === 'mobile_money'
+                        ? '📱 ' + (r.account_details?.phone || JSON.stringify(r.account_details))
+                        : '🏦 ' + (r.account_details?.account || JSON.stringify(r.account_details))}
+                    </p>
+                  )}
                 </div>
                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : r.status === 'approved' ? 'bg-blue-100 text-blue-800' : r.status === 'processed' ? 'bg-agro-100 text-agro-800' : 'bg-red-100 text-red-800'}`}>{r.status}</span>
               </div>

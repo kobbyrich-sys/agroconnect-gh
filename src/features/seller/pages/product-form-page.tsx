@@ -136,7 +136,7 @@ export function ProductFormPage() {
               type="text" required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
             />
           </div>
           <div>
@@ -144,7 +144,7 @@ export function ProductFormPage() {
             <select
               required value={form.category_id}
               onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
             >
               <option value="">Select a category</option>
               {categories.map((c) => (
@@ -157,7 +157,7 @@ export function ProductFormPage() {
             <textarea
               rows={4} value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -167,7 +167,7 @@ export function ProductFormPage() {
                 type="number" step="0.01" min="0" required
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
-                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
               />
             </div>
             <div>
@@ -177,7 +177,7 @@ export function ProductFormPage() {
                 value={form.unit}
                 onChange={(e) => setForm({ ...form, unit: e.target.value })}
                 placeholder="kg, bag, crate..."
-                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
               />
             </div>
           </div>
@@ -188,7 +188,7 @@ export function ProductFormPage() {
                 type="number" step="0.01" min="0" required
                 value={form.min_order}
                 onChange={(e) => setForm({ ...form, min_order: e.target.value })}
-                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
               />
             </div>
             <div>
@@ -197,7 +197,7 @@ export function ProductFormPage() {
                 type="number" step="0.01" min="0" required
                 value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
               />
             </div>
           </div>
@@ -206,7 +206,7 @@ export function ProductFormPage() {
             <select
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value as Product['status'] })}
-              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500"
+              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700"
             >
               <option value="draft">Draft</option>
               <option value="active">Active</option>

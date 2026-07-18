@@ -77,7 +77,7 @@ export function ChatPage() {
           <div ref={bottomRef} />
         </div>
         <form onSubmit={sendMessage} className="flex items-center gap-2 border-t border-earth-200 p-4">
-          <input type="text" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Type a message..." className="flex-1 rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500" />
+          <input type="text" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Type a message..." className="flex-1 rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700" />
           <Button type="submit" size="sm" disabled={sending || !content.trim()}>Send</Button>
         </form>
       </Card>

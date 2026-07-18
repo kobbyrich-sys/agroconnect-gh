@@ -28,15 +28,15 @@ export function OrdersPage() {
     shipped: 'bg-purple-100 text-purple-800',
     delivered: 'bg-agro-100 text-agro-800',
     cancelled: 'bg-red-100 text-red-800',
-    refunded: 'bg-earth-100 text-earth-600',
+    refunded: 'bg-red-100 text-red-800',
   }
 
   const paymentStatusColor: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
-    awaiting_payment: 'bg-orange-100 text-orange-800',
+    awaiting_payment: 'bg-gold-100 text-gold-800',
     paid: 'bg-blue-100 text-blue-800',
     escrow_held: 'bg-indigo-100 text-indigo-800',
-    escrow_released: 'bg-green-100 text-green-800',
+    escrow_released: 'bg-agro-100 text-agro-800',
     refunded: 'bg-red-100 text-red-800',
   }
 

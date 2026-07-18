@@ -73,12 +73,12 @@ export function WithdrawalPage() {
             <label className="block text-sm font-medium text-earth-700 mb-1">Amount (GH₵)</label>
             <input type="number" step="0.01" min="0" max={balance || 0} required value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500" />
+              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700" />
           </div>
           <div>
             <label className="block text-sm font-medium text-earth-700 mb-1">Method</label>
             <select value={method} onChange={(e) => setMethod(e.target.value as any)}
-              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500">
+              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700">
               <option value="mobile_money">Mobile Money</option>
               <option value="bank_transfer">Bank Transfer</option>
             </select>
@@ -87,7 +87,7 @@ export function WithdrawalPage() {
             <div>
               <label className="block text-sm font-medium text-earth-700 mb-1">Provider</label>
               <select value={provider} onChange={(e) => setProvider(e.target.value)}
-                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500">
+                className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700">
                 <option value="">Select provider</option>
                 <option value="mtn">MTN Mobile Money</option>
                 <option value="vodafone">Vodafone Cash</option>
@@ -102,7 +102,7 @@ export function WithdrawalPage() {
             <input type="text" required value={accountDetails}
               onChange={(e) => setAccountDetails(e.target.value)}
               placeholder={method === 'mobile_money' ? '054XXX XXXX' : 'Bank, branch, account number'}
-              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500" />
+              className="w-full rounded-lg border border-earth-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agro-700" />
           </div>
           <Button type="submit" loading={submitting} className="w-full">Submit Withdrawal Request</Button>
         </form>

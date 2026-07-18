@@ -59,7 +59,7 @@ export function AdminDashboard() {
 
   const orderChartData = {
     labels: orderStatuses.map(s => s.status.charAt(0).toUpperCase() + s.status.slice(1)),
-    datasets: [{ data: orderStatuses.map(s => s.count), backgroundColor: ['#facc15', '#60a5fa', '#a855f7', '#4ade80', '#f87171', '#9ca3af'], borderWidth: 0 }],
+    datasets: [{ data: orderStatuses.map(s => s.count),     backgroundColor: ['#D98C10', '#2563EB', '#a855f7', '#2E8B57', '#DC2626', '#64748B'], borderWidth: 0 }],
   }
 
   const revenueChartData = {
@@ -67,8 +67,8 @@ export function AdminDashboard() {
     datasets: [{
       label: 'Revenue (GHS)',
       data: monthlyRevenue.map(m => m.total),
-      borderColor: '#1a6b3c',
-      backgroundColor: 'rgba(26,107,60,0.1)',
+      borderColor: '#084C31',
+      backgroundColor: 'rgba(8,76,49,0.1)',
       fill: true,
       tension: 0.4,
     }],
@@ -77,7 +77,7 @@ export function AdminDashboard() {
   const statusColor: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800', confirmed: 'bg-blue-100 text-blue-800',
     shipped: 'bg-purple-100 text-purple-800', delivered: 'bg-agro-100 text-agro-800',
-    cancelled: 'bg-red-100 text-red-800', refunded: 'bg-earth-100 text-earth-600',
+    cancelled: 'bg-red-100 text-red-800', refunded: 'bg-red-100 text-red-800',
   }
 
   return (

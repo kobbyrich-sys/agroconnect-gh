@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Logo } from '@/components/ui'
 
 export function Footer() {
   return (
@@ -6,12 +7,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <img src="/logo.svg" alt="AgroConnect GH" className="h-8 w-auto" />
-              <span className="text-lg font-bold text-agro-800">
-                AgroConnect<span className="text-earth-600">GH</span>
-              </span>
-            </Link>
+            <div className="mb-4"><Logo className="h-8 w-auto" linkTo="/" compact showTagline={false} /></div>
             <p className="text-sm text-earth-600">
               Ghana&apos;s digital agricultural marketplace connecting farmers, processors, and buyers.
             </p>

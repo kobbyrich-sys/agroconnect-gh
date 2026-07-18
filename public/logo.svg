@@ -1,8 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <rect width="48" height="48" rx="10" fill="#16a34a"/>
-  <path d="M14 28c0-6 4-11 10-11s10 5 10 11" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-  <path d="M24 17V10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M20 13h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-  <path d="M18 28c0 3.3 2.7 6 6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <path d="M18 28h12l-3 6-3-4-3 4-3-6z" fill="#bbf7d0" opacity="0.8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <defs>
+    <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2E8B57"/>
+      <stop offset="100%" stop-color="#084C31"/>
+    </linearGradient>
+    <linearGradient id="gearGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D98C10"/>
+      <stop offset="100%" stop-color="#B8740D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Circular emblem background -->
+  <circle cx="52" cy="60" r="46" fill="#0B5D3B"/>
+
+  <!-- Leaf (agriculture) -->
+  <path d="M52,96 C20,84 8,52 20,28 C28,14 42,14 52,14 C62,14 76,14 84,28 C96,52 84,84 52,96 Z" fill="url(#leafGrad)" opacity="0.9"/>
+  <!-- Leaf vein -->
+  <path d="M52,14 L52,96" stroke="#0B5D3B" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Gear (industry/processing) -->
+  <circle cx="60" cy="54" r="16" fill="none" stroke="url(#gearGrad)" stroke-width="5"/>
+  <circle cx="60" cy="54" r="8" fill="#0B5D3B"/>
+
+  <!-- Gear teeth -->
+  <g stroke="#D98C10" stroke-width="3.5" stroke-linecap="round">
+    <line x1="60" y1="34" x2="60" y2="38"/>
+    <line x1="60" y1="70" x2="60" y2="74"/>
+    <line x1="40" y1="54" x2="44" y2="54"/>
+    <line x1="76" y1="54" x2="80" y2="54"/>
+    <line x1="45.9" y1="39.9" x2="48.7" y2="42.7"/>
+    <line x1="71.3" y1="65.3" x2="74.1" y2="68.1"/>
+    <line x1="45.9" y1="68.1" x2="48.7" y2="65.3"/>
+    <line x1="71.3" y1="42.7" x2="74.1" y2="39.9"/>
+  </g>
+
+  <!-- Smartphone icon -->
+  <rect x="62" y="74" width="8" height="14" rx="2" fill="none" stroke="#2E8B57" stroke-width="1.5"/>
+  <circle cx="66" cy="85" r="1.2" fill="#2E8B57"/>
+
+  <!-- Shopping cart icon -->
+  <g transform="translate(28,78)" fill="none" stroke="#D98C10" stroke-width="1.5">
+    <circle cx="3" cy="8" r="2" fill="#D98C10"/>
+    <circle cx="12" cy="8" r="2" fill="#D98C10"/>
+    <path d="M0,0 L4,0 L6,6 L16,6 L18,2 L20,2"/>
+  </g>
+
+  <!-- AgroConnect text -->
+  <text x="116" y="48" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="26" font-weight="800" fill="#084C31" letter-spacing="-0.5">AgroConnect</text>
+  <text x="116" y="72" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="20" font-weight="700" fill="#D98C10" letter-spacing="2">GH</text>
+
+  <!-- Tagline -->
+  <text x="116" y="94" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="9" font-weight="600" fill="#2E8B57" letter-spacing="1">FARM &bull; FACTORY &bull; MARKETPLACE</text>
+  <text x="116" y="108" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="8" fill="#64748B" letter-spacing="0.5">CONNECT. TRADE. GROW TOGETHER.</text>
 </svg>
